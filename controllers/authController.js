@@ -8,68 +8,24 @@ const sendSMS = require("../utils/sendSms");
 exports.signup = async (req, res) => {
     try {
         const password = bcrypt.hashSync(req.body.password, 8);
-        const id = newOTP.generate(12, {
-            alphabets: true,
-            upperCase: false,
-            specialChar: false,
-        });
-
-        const {
-            firstName,
-            lastName,
-            middleName,
-            phone,
-            customerId,
-            email,
-            dateOfBirth,
-            gender,
-            bloodGroup,
-            doctorName,
-            hospitalName,
-            maritalStatus,
-            father_spouseName,
-            relationship,
-            firstLineAddress,
-            secondLineAddress,
-            country,
-            state,
-            district,
-            pincode,
-        } = req.body;
-        const user = await User.create({
-            firstName,
-            lastName,
-            middleName,
-            phone,
-            email,
-            password,
-            customerId,
-            dateOfBirth,
-            gender,
-            bloodGroup,
-            doctorName,
-            hospitalName,
-            maritalStatus,
-            father_spouseName,
-            relationship,
-            firstLineAddress,
-            secondLineAddress,
-            country,
-            state,
-            district,
-            pincode,
-        });
-        res.status(200).json({
-            status: 1,
-            message: "signed up successfully",
-            data: user,
-        });
-        // createResponse(res, 200, "signed up successfully", user);
+        const id = newOTP.generate(12, { alphabets: true, upperCase: false, specialChar: false, });
+        const { firstName, lastName, middleName, phone, customerId, email, dateOfBirth, gender, bloodGroup, doctorName, hospitalName, maritalStatus, father_spouseName, relationship, firstLineAddress, secondLineAddress, country, state, district, pincode, } = req.body;
+        const refferalCode = await reffralCode()
+        const user = await User.create({ firstName, refferalCode, lastName, middleName, phone, email, password, customerId, dateOfBirth, gender, bloodGroup, doctorName, hospitalName, maritalStatus, father_spouseName, relationship, firstLineAddress, secondLineAddress, country, state, district, pincode, });
+        return res.status(200).json({ status: 1, message: "signed up successfully", data: user, });
     } catch (err) {
         console.error(err);
-        createResponse(res, 500, "internal error " + err.message);
+        return createResponse(res, 500, "internal error " + err.message);
     }
 };
+const reffralCode = async () => {
+    var digits = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    let OTP = '';
+    for (let i = 0; i < 9; i++) {
+        OTP += digits[Math.floor(Math.random() * 36)];
+    }
+    return OTP;
+}
 const axios = require("axios");
 const MSG91_API_KEY = "392665AOfokrdImEwF64130f11P1";
 const sdk = require("api")("@msg91api/v5.0#171eja12lf0xqafw");
@@ -147,14 +103,14 @@ exports.loginwithotp = async (req, res) => {
             .catch(function (error) {
                 console.error(error);
             });
-        createResponse(res, 200, "otp successfully", {
+        return createResponse(res, 200, "otp successfully", {
             otp: otp,
             userId: user._id,
             data: user,
         });
     } catch (err) {
         console.log(err);
-        createResponse(res, 500, "internal error " + err.message);
+        return createResponse(res, 500, "internal error " + err.message);
     }
 };
 function generateOTP() {
@@ -188,14 +144,14 @@ function generateOTP() {
 //         });
 //         user.otp = otp;
 //         await user.save();
-//         createResponse(res, 200, "otp successfully", {
+//       return  createResponse(res, 200, "otp successfully", {
 //             otp: otp,
 //             userId: user._id,
 //             data: user,
 //         });
 //     } catch (err) {
 //         console.log(err);
-//         createResponse(res, 500, "internal error " + err.message);
+//       return  createResponse(res, 500, "internal error " + err.message);
 //     }
 // };
 exports.verifyOTP = async (req, res) => {
@@ -223,11 +179,11 @@ exports.verifyOTP = async (req, res) => {
         const accessToken = jwt.sign({ id: user._id }, authConfig.secret, {
             expiresIn: authConfig.accessTokenTime,
         });
-        createResponse(res, 200, "access token successfully", { accessToken });
+        return createResponse(res, 200, "access token successfully", { accessToken });
     } catch (err) {
         // console..log(err);
         console.log(err);
-        createResponse(res, 500, "internal error " + err.message);
+        return createResponse(res, 500, "internal error " + err.message);
     }
 };
 
@@ -254,13 +210,13 @@ exports.loginWithEmail = async (req, res) => {
         const accessToken = jwt.sign({ id: user._id }, authConfig.secret, {
             expiresIn: authConfig.accessTokenTime,
         });
-        createResponse(res, 200, "LoggedIn successfully", {
+        return createResponse(res, 200, "LoggedIn successfully", {
             accessToken: accessToken,
             userId: user._id,
         });
     } catch (err) {
         console.log(err);
-        createResponse(res, 500, "internal error " + err.message);
+        return createResponse(res, 500, "internal error " + err.message);
     }
 };
 exports.addCustomer = async (req, res) => {
@@ -330,6 +286,6 @@ exports.addCustomer = async (req, res) => {
         // createResponse(res, 200, "signed up successfully", user);
     } catch (err) {
         console.error(err);
-        createResponse(res, 500, "internal error " + err.message);
+        return createResponse(res, 500, "internal error " + err.message);
     }
 };

@@ -14,9 +14,7 @@ const instance = new Razorpay({
 
 exports.create = async (req, res) => {
     try {
-        const order = await Order.findById(req.params.id).populate(
-            "catalogueId"
-        );
+        const order = await Order.findById(req.params.id).populate("catalogueId");
         if (!order) {
             return res.status(404).send({ message: "order order not found" });
         }

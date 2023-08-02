@@ -1,11 +1,8 @@
 const Document = require("../models/document.model");
-// const Document = require('../models/Document');
 const mongoose = require("mongoose");
-const createResponse = require("../utils/response");
-// Get all documents
 exports.getAllDocuments = async (req, res, next) => {
     try {
-        const documents = await Document.find();
+        const documents = await Document.find({ userId: req.user._id });
         if (documents.length === 0) {
             return res.status(200).json({
                 status: 0,
@@ -14,7 +11,7 @@ exports.getAllDocuments = async (req, res, next) => {
                 data: [],
             });
         }
-        res.status(200).json({ status: 1, success: true, data: documents });
+        return res.status(200).json({ status: 1, success: true, data: documents });
     } catch (error) {
         res.status(500).json({
             status: 0,
@@ -23,24 +20,22 @@ exports.getAllDocuments = async (req, res, next) => {
         });
     }
 };
-
-// Create a new document
 exports.createDocument = async (req, res, next) => {
     try {
-        const userId = req.user._id;
-        const { document } = req.body;
-        const newDocument = await Document.create({ userId, document });
-        res.status(201).json({ status: 1, success: true, data: newDocument });
+        let fileUrl;
+        if (req.file) {
+            fileUrl = req.file ? req.file.path : "";
+        }
+        let obj = {
+            userId: req.user._id,
+            document: fileUrl
+        }
+        const newDocument = await Document.create(obj);
+        return res.status(201).json({ status: 1, success: true, data: newDocument });
     } catch (error) {
-        res.status(500).json({
-            status: 0,
-            success: false,
-            message: error.message,
-        });
+        return res.status(500).json({ status: 0, success: false, message: error.message, });
     }
 };
-
-// Get a single document by ID
 exports.getDocumentById = async (req, res, next) => {
     try {
         const document = await Document.findById(req.params.id).lean();
@@ -51,45 +46,40 @@ exports.getDocumentById = async (req, res, next) => {
                 message: "Document not found",
             });
         }
-        res.status(200).json({ status: 1, success: true, data: document });
+        return res.status(200).json({ status: 1, success: true, data: document });
     } catch (error) {
-        res.status(500).json({
+        return res.status(500).json({
             status: 0,
             success: false,
             message: error.message,
         });
     }
 };
-
-// Update a document by ID
 exports.updateDocumentById = async (req, res, next) => {
     try {
-        const document = await Document.findByIdAndUpdate(
-            req.params.id,
-            req.body,
-            {
-                new: true,
-                runValidators: true,
-            }
-        );
+        const document = await Document.findById(req.params.id).lean();
         if (!document) {
-            return res.status(404).json({
-                status: 0,
-                success: false,
-                message: "Document not found",
-            });
+            return res.status(404).json({ status: 0, success: false, message: "Document not found", });
+        } else {
+            let fileUrl;
+            if (req.file) {
+                fileUrl = req.file ? req.file.path : "";
+            }
+            let obj = {
+                userId: req.user._id,
+                document: fileUrl || document.document
+            }
+            const update = await Document.findByIdAndUpdate(document._id, obj, { new: true, runValidators: true, });
+            return res.status(200).json({ status: 1, success: true, data: update });
         }
-        res.status(200).json({ status: 1, success: true, data: document });
     } catch (error) {
-        res.status(500).json({
+        return res.status(500).json({
             status: 0,
             success: false,
             message: error.message,
         });
     }
 };
-
-// Delete a document by ID
 exports.deleteDocumentById = async (req, res, next) => {
     try {
         const document = await Document.findByIdAndDelete(req.params.id);
@@ -100,16 +90,15 @@ exports.deleteDocumentById = async (req, res, next) => {
                 message: "Document not found",
             });
         }
-        res.status(200).json({ status: 1, success: true, data: {} });
+        return res.status(200).json({ status: 1, success: true, data: {} });
     } catch (error) {
-        res.status(500).json({
+        return res.status(500).json({
             status: 0,
             success: false,
             message: error.message,
         });
     }
 };
-
 exports.getMonthlyDocumentOfUser = async (req, res) => {
     try {
         const { id } = req.params;
@@ -156,9 +145,9 @@ exports.getMonthlyDocumentOfUser = async (req, res) => {
             };
         });
         // console.log(data);
-        res.status(200).json({ status: 1, data: data });
+        return res.status(200).json({ status: 1, data: data });
     } catch (err) {
         console.log(err);
-        res.status(500).json({ message: err.message });
+        return res.status(500).json({ message: err.message });
     }
 };

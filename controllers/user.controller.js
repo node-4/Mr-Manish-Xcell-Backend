@@ -8,10 +8,10 @@
 //         if (users.length === 0) {
 //             return createResponse(res, 200, "users not found", users);
 //         }
-//         createResponse(res, 200, "found", users);
+//        return createResponse(res, 200, "found", users);
 //     } catch (err) {
 //         console.log(err);
-//         createResponse(res, 500, "internal server error " + err.message);
+//        return createResponse(res, 500, "internal server error " + err.message);
 //     }
 // };
 
@@ -21,10 +21,10 @@
 //         if (users.length === 0) {
 //             return createResponse(res, 200, "users not found", users);
 //         }
-//         createResponse(res, 200, "found", users);
+//        return createResponse(res, 200, "found", users);
 //     } catch (err) {
 //         console.log(err);
-//         createResponse(res, 500, "internal server error " + err.message);
+//        return createResponse(res, 500, "internal server error " + err.message);
 //     }
 // };
 
@@ -45,10 +45,10 @@
 //         if (!user) {
 //             return createResponse(res, 402, "update user failed");
 //         }
-//         createResponse(res, 200, "user updated", user);
+//        return createResponse(res, 200, "user updated", user);
 //     } catch (err) {
 //         console.log(err);
-//         createResponse(res, 500, "internal server error " + err.message);
+//        return createResponse(res, 500, "internal server error " + err.message);
 //     }
 // }
 // exports.deleteUser = async (req, res) => {
@@ -57,10 +57,10 @@
 //         if (!user) {
 //             return createResponse(res, 200, "user not found");
 //         }
-//         createResponse(res, 200, "user deleted", user);
+//        return createResponse(res, 200, "user deleted", user);
 //     } catch (err) {
 //         console.log(err);
-//         createResponse(res, 500, "internal server error " + err.message);
+//        return createResponse(res, 500, "internal server error " + err.message);
 //     }
 // }
 
@@ -77,131 +77,92 @@ exports.getALlUsers = async (req, res) => {
                 data: users,
             });
         }
-        createResponse(res, 200, "found", { status: 1, data: users });
+        return createResponse(res, 200, "found", { status: 1, data: users });
     } catch (err) {
         console.log(err);
-        createResponse(res, 500, "internal server error " + err.message, {
+        return createResponse(res, 500, "internal server error " + err.message, {
             status: 0,
         });
     }
 };
-
 exports.getUserById = async (req, res) => {
     try {
         const user = await User.findById(req.params.id).lean();
         if (!user) {
             return createResponse(res, 200, "user not found", { status: 0 });
         }
-        createResponse(res, 200, "found", { status: 1, data: user });
+        return createResponse(res, 200, "found", { status: 1, data: user });
     } catch (err) {
         console.log(err);
-        createResponse(res, 500, "internal server error " + err.message, {
+        return createResponse(res, 500, "internal server error " + err.message, {
             status: 0,
         });
     }
 };
-
 exports.updateUser = async (req, res) => {
     try {
-        const {
-            firstName,
-            lastName,
-            middleName,
-            phone,
-            email,
-            customerId,
-            dateOfBirth,
-            gender,
-            bloodGroup,
-            doctorName,
-            hospitalName,
-            maritalStatus,
-            father_spouseName,
-            relationship,
-            firstLineAddress,
-            secondLineAddress,
-            country,
-            state,
-            district,
-            pincode,
-        } = req.body;
-        if (req.body.password) {
-            const password = bcrypt.hashSync(req.body.password, 8);
-        }
-        if (req.body.email) {
-            const emailExists = await User.findOne({ email: req.body.email });
-            if (emailExists) {
-                return createResponse(res, 402, "email already exists", {
-                    status: 0,
-                });
-            }
-        }
-        if (req.body.mobile) {
-            const mobileExists = await User.findOne({ mobile });
-            if (mobileExists) {
-                return createResponse(
-                    res,
-                    402,
-                    "mobile number already exists",
-                    {
-                        status: 0,
-                    }
-                );
-            }
-        }
-        const user = await User.findByIdAndUpdate(
-            req.params.id,
-            {
-                firstName,
-                lastName,
-                middleName,
-                phone,
-                email,
-                
-                customerId,
-                dateOfBirth,
-                gender,
-                bloodGroup,
-                doctorName,
-                hospitalName,
-                maritalStatus,
-                father_spouseName,
-                relationship,
-                firstLineAddress,
-                secondLineAddress,
-                country,
-                state,
-                district,
-                pincode,
-            },
-            { new: true }
-        );
-
+        const { firstName, lastName, middleName, phone, email, customerId, dateOfBirth, gender, bloodGroup, doctorName, hospitalName, maritalStatus, father_spouseName, relationship, firstLineAddress, secondLineAddress, country, state, district, pincode, } = req.body;
+        const user = await User.findById(req.params.id).lean();
         if (!user) {
-            return createResponse(res, 402, "update user failed", {
-                status: 0,
-            });
+            return createResponse(res, 200, "user not found", { status: 0 });
+        } else {
+            let hasPassword;
+            if (req.body.password) {
+                hasPassword = bcrypt.hashSync(req.body.password, 8);
+            }
+            if (req.body.email) {
+                const emailExists = await User.findOne({ _id: { $ne: user._id }, email: req.body.email });
+                if (emailExists) {
+                    return createResponse(res, 402, "email already exists", { status: 0, });
+                }
+            }
+            if (req.body.mobile) {
+                const mobileExists = await User.findOne({ _id: { $ne: user._id }, mobile: req.body.mobile });
+                if (mobileExists) {
+                    return createResponse(res, 402, "mobile number already exists", { status: 0, });
+                }
+            }
+            let obj = {
+                firstName: firstName || user.firstName,
+                lastName: lastName || user.lastName,
+                middleName: middleName || user.middleName,
+                password: hasPassword || user.password,
+                phone: phone || user.phone,
+                email: email || user.email,
+                customerId: customerId || user.customerId,
+                dateOfBirth: dateOfBirth || user.dateOfBirth,
+                gender: gender || user.gender,
+                bloodGroup: bloodGroup || user.bloodGroup,
+                doctorName: doctorName || user.doctorName,
+                hospitalName: hospitalName || user.hospitalName,
+                maritalStatus: maritalStatus || user.maritalStatus,
+                father_spouseName: father_spouseName || user.father_spouseName,
+                relationship: relationship || user.relationship,
+                firstLineAddress: firstLineAddress || user.firstLineAddress,
+                secondLineAddress: secondLineAddress || user.secondLineAddress,
+                country: country || user.country,
+                state: state || user.state,
+                district: district || user.district,
+                pincode: pincode || user.pincode,
+            }
+            const update = await User.findByIdAndUpdate(req.params.id, { obj }, { new: true });
+            return createResponse(res, 200, "user updated", { status: 1, data: update });
         }
-
-        createResponse(res, 200, "user updated", { status: 1, data: user });
     } catch (err) {
         console.log(err);
-        createResponse(res, 500, "internal server error " + err.message, {
-            status: 0,
-        });
+        return createResponse(res, 500, "internal server error " + err.message, { status: 0, });
     }
 };
-
 exports.deleteUser = async (req, res) => {
     try {
         const user = await User.findByIdAndDelete(req.params.id);
         if (!user) {
             return createResponse(res, 200, "user not found", { status: 0 });
         }
-        createResponse(res, 200, "user deleted", { status: 1, data: user });
+        return createResponse(res, 200, "user deleted", { status: 1, data: user });
     } catch (err) {
         console.log(err);
-        createResponse(res, 500, "internal server error " + err.message, {
+        return createResponse(res, 500, "internal server error " + err.message, {
             status: 0,
         });
     }

@@ -31,7 +31,6 @@ const userSchema = new mongoose.Schema({
     },
     gender: {
         type: String,
-
     },
     bloodGroup: {
         type: String,
@@ -68,7 +67,14 @@ const userSchema = new mongoose.Schema({
     },
     pincode: {
         type: String,
-    }
+    },
+    refferalCode: {
+        type: String,
+    },
+    refferalUser: [{
+        type: mongoose.SchemaTypes.ObjectId,
+        ref: "User",
+    }]
 }, { timestamps: true });
 
 module.exports = mongoose.model('User', userSchema);
