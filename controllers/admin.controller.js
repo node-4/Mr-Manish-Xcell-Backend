@@ -17,9 +17,7 @@ exports.signUp = async (req, res) => {
                 return res.status(400).send({ message: "branch is required" });
             }
         }
-        const adminExists = await Admin.findOne({
-            $or: [{ email: req.body.email }, { phone: req.body.phone }],
-        });
+        const adminExists = await Admin.findOne({$or: [{ email: req.body.email }, { phone: req.body.phone }],});
         if (adminExists) {
             return res.status(400).send({
                 status: 0,

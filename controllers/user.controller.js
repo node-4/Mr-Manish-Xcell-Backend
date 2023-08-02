@@ -111,8 +111,10 @@ exports.updateUser = async (req, res) => {
                 hasPassword = bcrypt.hashSync(req.body.password, 8);
             }
             if (req.body.email) {
+                console.log(user);
                 const emailExists = await User.findOne({ _id: { $ne: user._id }, email: req.body.email });
                 if (emailExists) {
+                    console.log(emailExists);
                     return createResponse(res, 402, "email already exists", { status: 0, });
                 }
             }

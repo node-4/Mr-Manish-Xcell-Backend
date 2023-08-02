@@ -11,6 +11,14 @@ exports.signup = async (req, res) => {
         const id = newOTP.generate(12, { alphabets: true, upperCase: false, specialChar: false, });
         const { firstName, lastName, middleName, phone, customerId, email, dateOfBirth, gender, bloodGroup, doctorName, hospitalName, maritalStatus, father_spouseName, relationship, firstLineAddress, secondLineAddress, country, state, district, pincode, } = req.body;
         const refferalCode = await reffralCode()
+        const findUser = await User.findOne({ email: email });
+        if (findUser) {
+            return res.status(409).send({ status: 0, message: "Email already exits" });
+        }
+        const findUser1 = await User.findOne({ phone: phone });
+        if (findUser1) {
+            return res.status(409).send({ status: 0, message: "Phone already exits" });
+        }
         const user = await User.create({ firstName, refferalCode, lastName, middleName, phone, email, password, customerId, dateOfBirth, gender, bloodGroup, doctorName, hospitalName, maritalStatus, father_spouseName, relationship, firstLineAddress, secondLineAddress, country, state, district, pincode, });
         return res.status(200).json({ status: 1, message: "signed up successfully", data: user, });
     } catch (err) {
@@ -191,10 +199,7 @@ exports.loginWithEmail = async (req, res) => {
     try {
         const user = await User.findOne({ email: req.body.email });
         if (!user) {
-            return res
-                .status(200)
-                .send({ status: 0, message: "user not found" });
-            // return createResponse(res, 200, "user not found");
+            return res.status(200).send({ status: 0, message: "user not found" });
         }
         const passwordIsValid = bcrypt.compareSync(
             req.body.password,
@@ -233,35 +238,21 @@ exports.addCustomer = async (req, res) => {
         // }
         // const customerId = id;
 
-        const {
-            firstName,
-            lastName,
-            middleName,
-            phone,
-            customerId,
-            email,
-            dateOfBirth,
-            gender,
-            bloodGroup,
-            doctorName,
-            hospitalName,
-            maritalStatus,
-            father_spouseName,
-            relationship,
-            firstLineAddress,
-            secondLineAddress,
-            country,
-            state,
-            district,
-            pincode,
-        } = req.body;
+        const { firstName, lastName, middleName, phone, customerId, email, dateOfBirth, gender, bloodGroup, doctorName, hospitalName, maritalStatus, father_spouseName, relationship, firstLineAddress, secondLineAddress, country, state, district, pincode, } = req.body;
+        const findUser = await User.findOne({ email: email });
+        if (findUser) {
+            return res.status(409).send({ status: 0, message: "Email already exits" });
+        }
+        const findUser1 = await User.findOne({ phone: phone });
+        if (findUser1) {
+            return res.status(409).send({ status: 0, message: "Phone already exits" });
+        }
         const user = await User.create({
             firstName,
             lastName,
             middleName,
             phone,
             email,
-
             customerId,
             dateOfBirth,
             gender,
