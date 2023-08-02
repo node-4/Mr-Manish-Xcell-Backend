@@ -147,7 +147,7 @@ exports.updateUser = async (req, res) => {
                 district: district || user.district,
                 pincode: pincode || user.pincode,
             }
-            const update = await User.findByIdAndUpdate(req.params.id, { obj }, { new: true });
+            const update = await User.findByIdAndUpdate(req.params.id, { $set: obj }, { new: true });
             return createResponse(res, 200, "user updated", { status: 1, data: update });
         }
     } catch (err) {
