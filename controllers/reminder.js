@@ -12,6 +12,15 @@ const ReminderController = {
             return res.status(500).json({ error: error.message });
         }
     },
+    getReminder: async (req, res) => {
+        try {
+            const user = req.user;
+            const newDocument = await Reminder.find({ user });
+            return res.status(200).json({ message: "Reminder created successfully", data: newDocument });
+        } catch (error) {
+            return res.status(500).json({ error: error.message });
+        }
+    },
     updateReminder: async (req, res) => {
         try {
             const { text, dueDate } = req.body;
