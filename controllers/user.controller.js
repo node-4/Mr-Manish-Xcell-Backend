@@ -169,3 +169,24 @@ exports.deleteUser = async (req, res) => {
         });
     }
 };
+exports.updateProfile = async (req, res) => {
+    try {
+        const user = await User.findById(req.params.id).lean();
+        if (!user) {
+            return createResponse(res, 200, "user not found", { status: 0 });
+        } else {
+            let fileUrl;
+            if (req.file) {
+                fileUrl = req.file ? req.file.path : "";
+            }
+            let obj = {
+                image: fileUrl || user.image
+            }
+            const update = await User.findByIdAndUpdate(req.params.id, { $set: obj }, { new: true });
+            return createResponse(res, 200, "user updated", { status: 1, data: update });
+        }
+    } catch (err) {
+        console.log(err);
+        return createResponse(res, 500, "internal server error " + err.message, { status: 0, });
+    }
+};

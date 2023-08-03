@@ -71,6 +71,9 @@ const userSchema = new mongoose.Schema({
     refferalCode: {
         type: String,
     },
+    image: {
+        type: String,
+    },
     refferalUser: [{
         type: mongoose.SchemaTypes.ObjectId,
         ref: "User",
