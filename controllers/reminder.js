@@ -14,6 +14,7 @@ const ReminderController = {
     },
     getReminder: async (req, res) => {
         try {
+            console.log(req.user);
             const user = req.user;
             const newDocument = await Reminder.find({ user });
             return res.status(200).json({ message: "Reminder created successfully", data: newDocument });
