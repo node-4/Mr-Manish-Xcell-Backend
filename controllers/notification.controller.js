@@ -223,7 +223,8 @@ exports.getAllNotificationsForUser = async (req, res) => {
         // }
         const notifications = await Notification.find()
             .lean()
-            .sort("-createdAt");
+            .sort("-createdAt")
+            .populate({ path: 'recipient.userId', select: 'firstName middleName lastName' });
         if (notifications.length === 0) {
             return res.status(200).json({
                 status: 0,
