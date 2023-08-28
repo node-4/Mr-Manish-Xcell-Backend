@@ -11,7 +11,7 @@ router.post(
 
 // Get all notifications for one recipient
 router.get(
-    "/notifications/:id",
+    "/notifications1/:id",
     notificationController.getNotificationsForRecipient
 );
 

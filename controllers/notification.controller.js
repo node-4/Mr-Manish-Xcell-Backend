@@ -202,7 +202,7 @@ exports.getAllNotificationsForUser1 = async (req, res) => {
             });
         }
 
-        res.status(200).json({ status: 1, success: true, data: notifications });
+        res.status(200).json({ status: 1, success: true, data: notifications, length: notifications.length });
     } catch (err) {
         console.log(err);
         res.status(500).json({
