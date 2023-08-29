@@ -100,31 +100,14 @@ exports.deleteTerms = async (req, res) => {
         // Find the terms and conditions document to delete
         const terms = await Terms.findById(id);
         if (!terms) {
-            // If the document doesn't exist, send a 404 error response to the client
-            return res.status(404).json({
-                status: 0,
-                success: false,
-                message: "Terms and conditions not found",
-            });
+            return res.status(404).json({ status: 0, success: false, message: "Terms and conditions not found", });
         } else {
-            // Delete the terms and conditions document from the database
-            await terms.delete();
-
-            // Send a success response to the client
-            res.status(200).json({
-                status: 1,
-                success: true,
-                message: "Terms and conditions deleted successfully",
-            });
+            await Terms.findByIdAndDelete({ _id: terms._id });
+            return res.status(200).json({ status: 1, success: true, message: "Terms and conditions deleted successfully", });
         }
     } catch (err) {
         console.log(err);
         // Send an error response to the client
-        res.status(500).json({
-            status: 0,
-            success: false,
-            message: "Error updating terms and conditions",
-            error: err.message,
-        });
+        return res.status(500).json({ status: 0, success: false, message: "Error updating terms and conditions", error: err.message, });
     }
 };
