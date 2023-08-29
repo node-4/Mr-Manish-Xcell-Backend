@@ -166,7 +166,7 @@ exports.getOrderCountsByMonth = async (req, res) => {
             {
                 $group: {
                     _id: {
-                        month: { $month: "$createdAt" },
+                        createdAt: { '$dateToString': { format: "%Y-%m-%d", date: '$createdAt' } },
                         year: { $year: "$createdAt" },
                     },
                     count: {
@@ -177,7 +177,7 @@ exports.getOrderCountsByMonth = async (req, res) => {
             {
                 $project: {
                     _id: 0,
-                    month: "$_id.month",
+                    dateToString: "$_id.createdAt",
                     year: "$_id.year",
                     count: 1,
                 },
@@ -185,60 +185,16 @@ exports.getOrderCountsByMonth = async (req, res) => {
             {
                 $sort: {
                     year: 1,
-                    month: 1,
+                    dateToString: 1,
                 },
             },
         ];
-        // const pipeline = [
-        //     {
-        //         $group: {
-        //             _id: {
-        //                 $month: "$createdAt",
-        //             },
-        //             count: {
-        //                 $sum: 1,
-        //             },
-        //         },
-        //     },
-        //     {
-        //         $project: {
-        //             _id: 0,
-        //             month: "$_id",
-        //             year: "$_id",
-        //             count: 1,
-        //         },
-        //     },
-        //     {
-        //         $sort: {
-        //             month: 1,
-        //         },
-        //     },
-        // ];
-
         const orderCounts = await Order.aggregate(pipeline);
         if (orderCounts.length === 0) {
-            return res.status(200).json({
-                message: "No orders found",
-            });
+            return res.status(200).json({ message: "No orders found", });
         }
-        console.log(orderCounts);
-        const monthNames = [
-            "Jan",
-            "Feb",
-            "Mar",
-            "Apr",
-            "May",
-            "Jun",
-            "Jul",
-            "Aug",
-            "Sep",
-            "Oct",
-            "Nov",
-            "Dec",
-        ];
-        const result = orderCounts.map(({ month, year, count }) => {
-            const monthName = monthNames[month - 1];
-            return { month: monthName, year: year, orderCount: count };
+        const result = orderCounts.map(({ dateToString, year, count }) => {
+            return { date: dateToString, year: year, orderCount: count };
         });
 
         console.log(result);
