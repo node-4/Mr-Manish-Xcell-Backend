@@ -11,7 +11,7 @@ exports.getAllSupportTickets = async (req, res) => {
         }
         res.status(200).json({
             status: 1,
-            data: supportTickets[supportTickets.length - 1],
+            data: supportTickets
         });
     } catch (error) {
         res.status(500).json({
@@ -44,14 +44,14 @@ exports.getSupportTicketById = async (req, res) => {
 
 // POST /support-tickets
 exports.createSupportTicket = async (req, res) => {
-    const { email, phone } = req.body;
+    const { email, phone, location } = req.body;
     // const userId = req.user._id; // assuming user id is stored in req.user
 
     try {
         const supportTicket = new SupportTicket({
             email,
             phone,
-            // user: userId,
+            location
         });
 
         await supportTicket.save();

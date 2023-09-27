@@ -20,6 +20,9 @@ const schema = new mongoose.Schema(
         dispatchDate: {
             type: Date,
         },
+        expectedDelivered : {
+            type: String,
+        },
         date: {
             type: String,
         },

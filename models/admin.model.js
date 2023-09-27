@@ -28,6 +28,10 @@ const schema = new mongoose.Schema(
         role: {
             type: String,
         },
+        userId: [{
+            type: mongoose.SchemaTypes.ObjectId,
+            ref: "User",
+        }],
     },
     { timestamps: true }
 );

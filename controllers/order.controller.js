@@ -160,14 +160,120 @@ exports.deleteOrder = async (req, res) => {
     }
 };
 
+// exports.getOrderCountsByMonth = async (req, res) => {
+//     try {
+//         const pipeline = [
+//             {
+//                 $group: {
+//                     _id: {
+//                         createdAt: { '$dateToString': { format: "%Y-%m-%d", date: '$createdAt' } },
+//                         year: { $year: "$createdAt" },
+//                     },
+//                     count: {
+//                         $sum: 1,
+//                     },
+//                 },
+//             },
+//             {
+//                 $project: {
+//                     _id: 0,
+//                     dateToString: "$_id.createdAt",
+//                     year: "$_id.year",
+//                     count: 1,
+//                 },
+//             },
+//             {
+//                 $sort: {
+//                     year: 1,
+//                     dateToString: 1,
+//                 },
+//             },
+//         ];
+//         const orderCounts = await Order.aggregate(pipeline);
+//         if (orderCounts.length === 0) {
+//             return res.status(200).json({ message: "No orders found", });
+//         }
+//         const result = orderCounts.map(({ dateToString, year, count }) => {
+//             return { date: dateToString, year: year, orderCount: count };
+//         });
+
+//         console.log(result);
+//         res.json({ status: 1, data: result });
+//     } catch (err) {
+//         console.log(err);
+//         res.status(500).json({ status: 0, message: err.message });
+//     }
+// };
+// exports.getOrderCountsByMonth = async (req, res) => {
+//     try {
+//         const pipeline = [
+//             {
+//                 $group: {
+//                     _id: {
+//                         createdAt: {
+//                             $dateToString: { format: "%Y-%m-%d", date: "$createdAt" },
+//                         },
+//                         year: { $year: "$createdAt" },
+//                         month: { $month: "$createdAt" },
+//                     },
+//                     count: {
+//                         $sum: 1,
+//                     },
+//                 },
+//             },
+//             {
+//                 $project: {
+//                     _id: 0,
+//                     date: "$_id.createdAt",
+//                     year: "$_id.year",
+//                     month: "$_id.month",
+//                     count: 1,
+//                 },
+//             },
+//             {
+//                 $sort: {
+//                     year: 1,
+//                     month: 1,
+//                     date: 1,
+//                 },
+//             },
+//         ];
+
+//         const orderCounts = await Order.aggregate(pipeline);
+
+//         if (orderCounts.length === 0) {
+//             return res.status(200).json({ message: "No orders found" });
+//         }
+
+//         const result = orderCounts.map(({ date, year, month, count }) => {
+//             return { date, year, month, orderCount: count };
+//         });
+
+//         console.log(result);
+//         res.json({ status: 1, data: result });
+//     } catch (err) {
+//         console.log(err);
+//         res.status(500).json({ status: 0, message: err.message });
+//     }
+// };
 exports.getOrderCountsByMonth = async (req, res) => {
     try {
+        const { groupBy } = req.query;
+        if (!groupBy || (groupBy !== 'date' && groupBy !== 'month')) {
+            return res.status(400).json({ message: "Invalid 'groupBy' parameter. Use 'date' or 'month'." });
+        }
         const pipeline = [
             {
                 $group: {
                     _id: {
-                        createdAt: { '$dateToString': { format: "%Y-%m-%d", date: '$createdAt' } },
+                        createdAt: {
+                            $dateToString: {
+                                format: groupBy === 'date' ? "%Y-%m-%d" : "%Y-%m",
+                                date: "$createdAt",
+                            },
+                        },
                         year: { $year: "$createdAt" },
+                        month: { $month: "$createdAt" },
                     },
                     count: {
                         $sum: 1,
@@ -177,31 +283,31 @@ exports.getOrderCountsByMonth = async (req, res) => {
             {
                 $project: {
                     _id: 0,
-                    dateToString: "$_id.createdAt",
+                    date: "$_id.createdAt",
                     year: "$_id.year",
+                    month: "$_id.month",
                     count: 1,
                 },
             },
             {
                 $sort: {
                     year: 1,
-                    dateToString: 1,
+                    month: 1,
+                    date: 1,
                 },
             },
         ];
         const orderCounts = await Order.aggregate(pipeline);
         if (orderCounts.length === 0) {
-            return res.status(200).json({ message: "No orders found", });
+            return res.status(200).json({ message: "No orders found" });
         }
-        const result = orderCounts.map(({ dateToString, year, count }) => {
-            return { date: dateToString, year: year, orderCount: count };
+        const result = orderCounts.map(({ date, year, month, count }) => {
+            return { date, year, month, orderCount: count };
         });
-
-        console.log(result);
-        res.json({ status: 1, data: result });
+        return res.json({ status: 1, data: result });
     } catch (err) {
         console.log(err);
-        res.status(500).json({ status: 0, message: err.message });
+        return res.status(500).json({ status: 0, message: err.message });
     }
 };
 const fs = require("fs");

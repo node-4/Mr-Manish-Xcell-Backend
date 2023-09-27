@@ -128,6 +128,7 @@ const updateOrderTracking = async (req, res) => {
             time,
             trackingUpdatedByRole,
             trackingUpdatedBy,
+            expectedDelivered
         } = req.body;
         const orderTracking = await OrderTracking.findById(req.params.id);
         if (!orderTracking) {
@@ -137,13 +138,12 @@ const updateOrderTracking = async (req, res) => {
             });
         }
         // orderTracking.trackingUpdatedBy = req.body.trackingUpdatedBy;
-        orderTracking.trackingUpdatedByRole =
-            req.body.trackingUpdatedByRole ||
-            orderTracking.trackingUpdatedByRole;
-        orderTracking.orderId = req.body.orderId || orderTracking.orderId;
-        orderTracking.date = req.body.date || orderTracking.date;
-        orderTracking.time = req.body.time || orderTracking.time;
-        orderTracking.message = req.body.message || orderTracking.message;
+        orderTracking.trackingUpdatedByRole = trackingUpdatedByRole || orderTracking.trackingUpdatedByRole;
+        orderTracking.orderId = orderId || orderTracking.orderId;
+        orderTracking.date = date || orderTracking.date;
+        orderTracking.time = time || orderTracking.time;
+        orderTracking.message = message || orderTracking.message;
+        orderTracking.expectedDelivered = expectedDelivered || orderTracking.expectedDelivered;
         const updatedOrderTracking = await orderTracking.save();
         res.status(200).json({
             status: 1,
