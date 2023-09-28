@@ -37,47 +37,29 @@ const verifyToken = (req, res, next) => {
     });
 };
 const isAdmin = (req, res, next) => {
-    const token =
-        req.headers["x-access-token"] ||
-        req.get("Authorization")?.split("Bearer ")[1];
-
+    const token = req.headers["x-access-token"] || req.get("Authorization")?.split("Bearer ")[1];
     if (!token) {
-        return res.status(403).send({
-            status: 0,
-            message: "no token provided! Access prohibited",
-        });
+        return res.status(403).send({ status: 0, message: "no token provided! Access prohibited", });
     }
-
     jwt.verify(token, authConfig.secret, async (err, decoded) => {
         if (err) {
-            return res.status(401).send({
-                status: 0,
-                message: "unauthorized ! Admin role is required! ",
-            });
+            return res.status(401).send({ status: 0, message: "unauthorized ! Admin role is required! ", });
         }
-
-        const user = await AdminModel.findOne({ email: decoded.id });
-
+        const user = await AdminModel.findOne({ email: decoded.id, role: decoded.role, });
         if (!user) {
-            return res.status(400).send({
-                status: 0,
-                message: "The admin that this  token belongs to does not exist",
-            });
+            return res.status(400).send({ status: 0, message: "The admin that this  token belongs to does not exist", });
         }
         req.user = user;
-
         next();
     });
 };
 const userAdmin = async (req, res, next) => {
     if (req.user.role !== "Admin" && req.user.role !== "admin") {
-        return res.status(403).json({
-            status: 0,
-            message: "unauthorized ! Admin role is required",
-        });
+        return res.status(403).json({ status: 0, message: "unauthorized ! Admin role is required", });
     }
     next();
 };
+
 module.exports = {
     verifyToken,
     isAdmin,

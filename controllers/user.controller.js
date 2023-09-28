@@ -67,6 +67,7 @@
 const bcrypt = require("bcryptjs/dist/bcrypt");
 const User = require("../models/user.model");
 const { createResponse } = require("../utils/response");
+const adminModel = require("../models/admin.model");
 
 exports.getALlUsers = async (req, res) => {
     try {
@@ -188,5 +189,19 @@ exports.updateProfile = async (req, res) => {
     } catch (err) {
         console.log(err);
         return createResponse(res, 500, "internal server error " + err.message, { status: 0, });
+    }
+};
+exports.getAllUsersforSubAdmin = async (req, res) => {
+    try {
+        const loggedInUserId = req.user._id;
+        const loggedInUser = await adminModel.findById(loggedInUserId).lean();
+        if (!loggedInUser) { return createResponse(res, 404, "Logged-in user not found", { status: 0, }); }
+        const users = await User.find({ _id: { $in: loggedInUser.userId } }).lean();
+        if (users.length === 0) {
+            return createResponse(res, 200, "No matching users found", { status: 0, data: [], });
+        }
+        return createResponse(res, 200, "Found users", { status: 1, data: users, });
+    } catch (err) {
+        return createResponse(res, 500, "Internal server error " + err.message, { status: 0, });
     }
 };

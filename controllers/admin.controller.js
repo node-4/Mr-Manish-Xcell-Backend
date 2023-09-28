@@ -1,10 +1,11 @@
 const bcrypt = require("bcryptjs");
-
 const jwt = require("jsonwebtoken");
 const authConfig = require("../configs/auth.config");
 const ObjectId = require("mongoose").Types.ObjectId;
 const Admin = require("../models/admin.model");
 const Branch = require("../models/branch.model");
+const User = require("../models/user.model");
+
 exports.signUp = async (req, res) => {
     try {
         if (req.body.confirmPassword !== req.body.password) {
@@ -17,7 +18,7 @@ exports.signUp = async (req, res) => {
                 return res.status(400).send({ message: "branch is required" });
             }
         }
-        const adminExists = await Admin.findOne({$or: [{ email: req.body.email }, { phone: req.body.phone }],});
+        const adminExists = await Admin.findOne({ $or: [{ email: req.body.email }, { phone: req.body.phone }], });
         if (adminExists) {
             return res.status(400).send({
                 status: 0,
@@ -60,60 +61,30 @@ exports.signUp = async (req, res) => {
         });
     }
 };
-
 exports.signIn = async (req, res) => {
     try {
         if (!req.body.email) {
-            return res
-                .status(400)
-                .send({ status: 0, message: "email is required" });
+            return res.status(400).send({ status: 0, message: "email is required" });
         }
         if (!req.body.password) {
-            return res
-                .status(400)
-                .send({ status: 0, message: "password is required" });
+            return res.status(400).send({ status: 0, message: "password is required" });
         }
         if (!req.body.role) {
-            return res.status(400).send({
-                status: 0,
-                message: "role is required",
-            });
+            return res.status(400).send({ status: 0, message: "role is required", });
         }
-        const admin = await Admin.findOne({
-            email: req.body.email,
-            role: req.body.role,
-        });
+        const admin = await Admin.findOne({ email: req.body.email, role: req.body.role, });
         if (!admin) {
-            return res.status(400).send({
-                status: 0,
-                message: `Failed! ${req.body.role} passed doesn't exist`,
-            });
+            return res.status(400).send({ status: 0, message: `Failed! ${req.body.role} passed doesn't exist`, });
         }
 
-        const passwordIsValid = bcrypt.compareSync(
-            req.body.password,
-            admin.password
-        );
+        const passwordIsValid = bcrypt.compareSync(req.body.password, admin.password);
         if (!passwordIsValid) {
-            return res.status(401).send({
-                status: 0,
-                message: "Wrong password",
-            });
+            return res.status(401).send({ status: 0, message: "Wrong password", });
         }
 
-        const accessToken = jwt.sign({ id: admin.email }, authConfig.secret, {
-            expiresIn: authConfig.accessTokenTime,
-        });
-
+        const accessToken = jwt.sign({ id: admin.email, role: admin.role }, authConfig.secret, { expiresIn: authConfig.accessTokenTime, });
         console.log(`#### ${admin.email} ${admin._id} logged in ####`);
-
-        res.status(200).send({
-            status: 1,
-            adminId: admin._id,
-            email: admin.email,
-            accessToken: accessToken,
-            // refreshToken: refreshToken,
-        });
+        res.status(200).send({ status: 1, adminId: admin._id, email: admin.email, accessToken: accessToken, });
     } catch (err) {
         console.log("#### Error while Admin signing in ##### ", err.message);
         res.status(500).send({
@@ -122,7 +93,6 @@ exports.signIn = async (req, res) => {
         });
     }
 };
-
 exports.refreshAccessToken = (req, res) => {
     const accessToken = jwt.sign({ id: req.Admin.AdminId }, authConfig.secret, {
         expiresIn: authConfig.accessTokenTime,
@@ -132,7 +102,6 @@ exports.refreshAccessToken = (req, res) => {
         accessToken: accessToken,
     });
 };
-
 exports.deleteAdmin = async (req, res) => {
     try {
         const admin = await Admin.findByIdAndDelete(req.params.id);
@@ -152,7 +121,6 @@ exports.deleteAdmin = async (req, res) => {
         });
     }
 };
-
 exports.getAdmins = async (req, res) => {
     try {
         let queryObj = {};
@@ -175,7 +143,6 @@ exports.getAdmins = async (req, res) => {
         });
     }
 };
-
 exports.updateAdmin = async (req, res) => {
     try {
         const { firstName, lastName, role, email, phone } = req.body;
@@ -214,7 +181,6 @@ exports.updateAdmin = async (req, res) => {
         });
     }
 };
-
 exports.findByAdminId = async (req, res) => {
     try {
         const admin = await Admin.findById(req.params.id);
@@ -233,5 +199,42 @@ exports.findByAdminId = async (req, res) => {
             status: 0,
             message: "Internal server error while fetching data",
         });
+    }
+};
+exports.assignUserTosubAdmin = async (req, res, next) => {
+    try {
+        const userId = req.body.userId;
+        let findSubAdmin = await Admin.findOne({ _id: req.params.id });
+        if (!findSubAdmin) {
+            return res.status(404).json({ status: 0, message: "Sub admin not found" });
+        }
+        if (findSubAdmin.userId.includes(userId)) {
+            return res.status(200).json({ status: 200, message: "User already assign to Sub admin Successfully", });
+        } else {
+            findSubAdmin.userId.addToSet(userId);
+            await findSubAdmin.save();
+            return res.status(200).json({ status: 200, message: "User assign to Sub admin Successfully", });
+        }
+    } catch (error) {
+        return res.status(501).send({ status: 501, message: "server error.", data: {}, });
+    }
+};
+exports.removeUserTosubAdmin = async (req, res, next) => {
+    try {
+        const userId = req.body.userId;
+        let findSubAdmin = await Admin.findOne({ _id: req.params.id });
+        if (!findSubAdmin) {
+            return res.status(404).json({ status: 0, message: "Sub admin not found" });
+        }
+        if (findSubAdmin.userId.includes(userId)) {
+            findSubAdmin.userId.pull(userId);
+            await findSubAdmin.save();
+            return res.status(200).json({ status: 200, message: "User remove to Sub admin Successfully", });
+        } else {
+            return res.status(200).json({ status: 200, message: "This User not assign to Sub admin.", });
+        }
+    } catch (error) {
+        console.log(error);
+        return res.status(501).send({ status: 501, message: "server error.", data: {}, });
     }
 };

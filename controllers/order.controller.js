@@ -1,5 +1,6 @@
 const Order = require("../models/order.model");
 const User = require("../models/user.model");
+const adminModel = require("../models/admin.model");
 const Catalogue = require("../models/catalogue.model");
 exports.createOrder = async (req, res) => {
     try {
@@ -313,6 +314,7 @@ exports.getOrderCountsByMonth = async (req, res) => {
 const fs = require("fs");
 exports.import = async (req, res) => {
     try {
+        console.log(req.file);
         const file = req.file;
         const path = file.path;
         const workbook = XLSX.readFile(file.path);
@@ -351,11 +353,9 @@ exports.import = async (req, res) => {
         res.status(500).json({ status: 0, message: error.message });
     }
 };
-
 const XLSX = require("xlsx");
 // const Order = require("../models/Order");
 const AdmZip = require("adm-zip");
-
 // GET all orders
 // exports.download = async (req, res) => {
 //     try {
@@ -419,17 +419,12 @@ const AdmZip = require("adm-zip");
 //         res.status(500).send("Server Error");
 //     }
 // };
-
 const exceljs = require("exceljs");
 const ExcelJS = require("exceljs");
-
 exports.download = async (req, res) => {
     try {
-        // Fetch data from the database
         let query = { ...req.query };
         const orders = await Order.find(query).populate("catalogueId");
-
-        // Convert orders data to array of arrays (rows and columns)
         const data = orders.map((order, index) => [
             index + 1,
             order.name,
@@ -441,8 +436,6 @@ exports.download = async (req, res) => {
             order.totalAmount,
             order.totalPackages,
         ]);
-
-        // Add headers to the first row
         data.unshift([
             "sr No",
             "Patients",
@@ -454,14 +447,8 @@ exports.download = async (req, res) => {
             "Invoice Amount",
             "Total No of Boxes",
         ]);
-
-        // Create a new workbook
         const workbook = new ExcelJS.Workbook();
-
-        // Add a new worksheet to the workbook
         const worksheet = workbook.addWorksheet("Orders");
-
-        // Set the headers and data
         worksheet.columns = [
             { header: "sr No", key: "srNo" },
             { header: "Patients", key: "name" },
@@ -474,18 +461,13 @@ exports.download = async (req, res) => {
             { header: "Total No of Boxes", key: "totalPackages" },
         ];
         worksheet.addRows(data);
-
-        // Write the workbook to a file
         const filePath = "./orders.xlsx";
         await workbook.xlsx.writeFile(filePath);
-
-        // Send the file as a response
         res.download(filePath, "orders.xlsx", (err) => {
             if (err) {
                 console.error(err.message);
                 res.status(500).send("Server Error");
             }
-            // Delete the file after it's downloaded
             fs.unlinkSync(filePath);
         });
     } catch (err) {
@@ -493,7 +475,6 @@ exports.download = async (req, res) => {
         res.status(500).send("Server Error");
     }
 };
-
 exports.addOrder = async (req, res) => {
     try {
         if (req.body.orderDate) {
@@ -524,5 +505,49 @@ exports.addOrder = async (req, res) => {
     } catch (error) {
         console.log(error);
         res.status(500).json({ status: 0, message: error.message });
+    }
+};
+exports.getAllOrdersforSubAdmin = async (req, res) => {
+    try {
+        const loggedInUserId = req.user._id;
+        const loggedInUser = await adminModel.findById(loggedInUserId).lean();
+        if (!loggedInUser) { return createResponse(res, 404, "Logged-in user not found", { status: 0, }); }
+        let queryObj = { userId: { $in: loggedInUser.userId } };
+        if (req.query.userId) {
+            queryObj.userId = req.query.userId;
+        }
+        if (req.query.orderStatus) {
+            queryObj.orderStatus = req.query.orderStatus;
+        }
+        if (req.query.paymentStatus) {
+            queryObj.paymentStatus = req.query.paymentStatus;
+        }
+        if (req.query.startOfDay && req.query.endOfDay) {
+            const startOfDay = new Date(req.query.startOfDay);
+            const endOfDay = new Date(req.query.endOfDay);
+            queryObj.createdAt = { $gte: startOfDay, $lt: endOfDay };
+        }
+        if (req.query.startOfDay && req.query.endOfDay == undefined) {
+            const startOfDay = new Date(req.query.startOfDay);
+            // const endOfDay = new Date(req.query.endOfDay);
+            queryObj.createdAt = { $gte: startOfDay };
+        }
+        if (req.query.startOfDay == undefined && req.query.endOfDay) {
+            const endOfDay = new Date(req.query.endOfDay);
+            queryObj.createdAt = { $lt: endOfDay };
+        }
+        if (req.query.orderId) {
+            queryObj.orderId = req.query.orderId;
+        }
+        const orders = await Order.find(queryObj).populate("catalogueId").lean().sort({ createdAt: -1 });
+        if (orders.length === 0) {
+            return res
+                .status(200)
+                .json({ status: 0, message: "No orders found" });
+        }
+        res.json({ status: 1, data: orders });
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({ status: 0, message: err.message });
     }
 };
