@@ -205,3 +205,102 @@ exports.getAllUsersforSubAdmin = async (req, res) => {
         return createResponse(res, 500, "Internal server error " + err.message, { status: 0, });
     }
 };
+const fs = require("fs");
+const XLSX = require("xlsx");
+const ExcelJS = require("exceljs");
+exports.download = async (req, res) => {
+    try {
+        let query = { ...req.query };
+        const findUser = await User.find(query);
+        const data = findUser.map((z, i) => [
+            i + 1,
+            z.firstName,
+            z.middleName,
+            z.lastName,
+            z.customerId,
+            z.phone,
+            z.email,
+            z.dateOfBirth,
+            z.gender,
+            z.bloodGroup,
+            z.doctorName,
+            z.hospitalName,
+            z.maritalStatus,
+            z.father_spouseName,
+            z.relationship,
+            z.firstLineAddress,
+            z.secondLineAddress,
+            z.country,
+            z.state,
+            z.district,
+            z.pincode,
+            z.refferalCode,
+            z.image,
+        ]);
+        data.unshift([
+            "sr No",
+            "First Name",
+            "Middle Name",
+            "Last Name",
+            "Customer Id",
+            "Phone",
+            "Email",
+            "Date Of Birth",
+            "Gender",
+            "Blood Group",
+            "Doctor Name",
+            "Hospital Name",
+            "Marital Status",
+            "Father Spouse Name",
+            "Relationship",
+            "FirstLine Address",
+            "SecondLine Address",
+            "Country",
+            "State",
+            "District",
+            "Pincode",
+            "Refferal Code",
+            "Image"
+        ]);
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet("user");
+        worksheet.columns = [
+            { header: "sr No", key: "srNo" },
+            { header: "First Name", key: "firstName" },
+            { header: "Middle Name", key: "middleName" },
+            { header: "Last Name", key: "lastName" },
+            { header: "Customer Id", key: "customerId" },
+            { header: "Phone", key: "phone" },
+            { header: "Email", key: "email" },
+            { header: "Date Of Birth", key: "dateOfBirth" },
+            { header: "Gender", key: "gender" },
+            { header: "Blood Group", key: "bloodGroup" },
+            { header: "Doctor Name", key: "doctorName" },
+            { header: "Hospital Name", key: "hospitalName" },
+            { header: "Marital Status", key: "maritalStatus" },
+            { header: "Father Spouse Name", key: "father_spouseName" },
+            { header: "Relationship", key: "relationship" },
+            { header: "FirstLine Address", key: "firstLineAddress" },
+            { header: "SecondLine Address", key: "secondLineAddress" },
+            { header: "Country", key: "country" },
+            { header: "State", key: "state" },
+            { header: "District", key: "district" },
+            { header: "Pincode", key: "pincode" },
+            { header: "Refferal Code", key: "refferalCode" },
+            { header: "Image", key: "image" },
+        ];
+        worksheet.addRows(data);
+        const filePath = "./user.xlsx";
+        await workbook.xlsx.writeFile(filePath);
+        res.download(filePath, "user.xlsx", (err) => {
+            if (err) {
+                console.error(err.message);
+                res.status(500).send("Server Error");
+            }
+            fs.unlinkSync(filePath);
+        });
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send("Server Error");
+    }
+};

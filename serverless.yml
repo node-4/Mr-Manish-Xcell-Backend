@@ -1,4 +1,4 @@
-service: "X-Cell"
+service: "manish-xcell"
 
 provider:
     name: aws
@@ -8,16 +8,10 @@ provider:
     apiGateway:
         binaryMediaTypes:
             - "multipart/form-data"
-    package:
-    excludeDevDependencies: true
-    exclude:
-        - .git/**
-        - .vscode/**
-        - venv/**
 functions:
     app:
         handler: server.handler
-        name: X-Cell-manish-tanwar
+        name: manish-xcell
         events:
             - http:
                   path: /
@@ -28,6 +22,6 @@ functions:
                   method: ANY
                   cors: true
 
-# plugins:
-#     - serverless-offline
+plugins:
+    - serverless-offline
     # - serverless-event-body-option

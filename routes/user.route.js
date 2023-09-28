@@ -23,7 +23,6 @@ module.exports = (app) => {
     app.get("/api/v1/getReminder", [authJwt.verifyToken], ReminderController.getReminder);
     app.delete("/api/v1/users/deleteReminder/:id", [authJwt.verifyToken], ReminderController.deleteReminder);
     app.put("/api/v1/users/updateReminder/:id", [authJwt.verifyToken], ReminderController.updateReminder);
-
+    app.get("/api/v1/downloadUser", user.download);
     app.get("/api/v1/usersforSubAdmin", [authJwt.isAdmin], user.getAllUsersforSubAdmin);
-
 };
