@@ -127,20 +127,29 @@ exports.updateOrder = async (req, res) => {
                 .status(404)
                 .json({ status: 0, message: "Order not found" });
         }
-
-        const { totalPackages, orderStatus, deliveryDate } = req.body;
-
+        const { orderId, name, customerId, totalPackages, totalAmount, orderStatus, deliveryDate } = req.body;
         if (totalPackages !== undefined) {
             order.totalPackages = totalPackages;
         }
-
+        if (orderId !== undefined) {
+            order.orderId = orderId;
+        }
+        if (name !== undefined) {
+            order.name = name;
+        }
+        if (customerId !== undefined) {
+            order.customerId = customerId;
+        }
+        if (totalAmount !== undefined) {
+            order.totalAmount = totalAmount;
+        }
         if (orderStatus !== undefined) {
             order.orderStatus = orderStatus;
         }
         order.deliveryDate = deliveryDate || order.deliveryDate;
         const updatedOrder = await order.save();
 
-        res.json({ status: 1, message: "Order updated", data: updatedOrder });
+        return res.json({ status: 1, message: "Order updated", data: updatedOrder });
     } catch (err) {
         console.log(err);
         res.status(500).json({ status: 0, message: err.message });
