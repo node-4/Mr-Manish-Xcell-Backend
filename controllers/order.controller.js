@@ -121,11 +121,8 @@ exports.getOrderById = async (req, res) => {
 exports.updateOrder = async (req, res) => {
     try {
         const order = await Order.findById(req.params.id);
-
         if (!order) {
-            return res
-                .status(404)
-                .json({ status: 0, message: "Order not found" });
+            return res.status(404).json({ status: 0, message: "Order not found" });
         }
         const { orderId, name, customerId, totalPackages, totalAmount, orderStatus, deliveryDate } = req.body;
         if (totalPackages !== undefined) {
@@ -146,9 +143,10 @@ exports.updateOrder = async (req, res) => {
         if (orderStatus !== undefined) {
             order.orderStatus = orderStatus;
         }
-        order.deliveryDate = deliveryDate || order.deliveryDate;
+        if (deliveryDate !== undefined) {
+            order.deliveryDate = deliveryDate || order.deliveryDate;
+        }
         const updatedOrder = await order.save();
-
         return res.json({ status: 1, message: "Order updated", data: updatedOrder });
     } catch (err) {
         console.log(err);
