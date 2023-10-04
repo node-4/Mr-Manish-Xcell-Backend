@@ -558,3 +558,62 @@ exports.getAllOrdersforSubAdmin = async (req, res) => {
         res.status(500).json({ status: 0, message: err.message });
     }
 };
+exports.getOrderCountsByMonthforSubAdmin = async (req, res) => {
+    try {
+        // Fetch the logged-in user
+        // const loggedInUserId = req.user._id;
+        // const loggedInUser = await adminModel.findById(loggedInUserId).lean();
+        // if (!loggedInUser) {
+        //     return res.status(404).json({ message: "Logged-in user not found", status: 0 });
+        // }
+        // req.query = { userId: { $in: loggedInUser.userId } };
+        const { groupBy } = req.query;
+        if (!groupBy || (groupBy !== 'date' && groupBy !== 'month')) {
+            return res.status(400).json({ message: "Invalid 'groupBy' parameter. Use 'date' or 'month'." });
+        }
+        const pipeline = [
+            {
+                $group: {
+                    _id: {
+                        createdAt: {
+                            $dateToString: {
+                                format: groupBy === 'date' ? "%Y-%m-%d" : "%Y-%m",
+                                date: "$createdAt",
+                            },
+                        },
+                        year: { $year: "$createdAt" },
+                        month: { $month: "$createdAt" },
+                    },
+                    count: {
+                        $sum: 1,
+                    },
+                },
+            },
+            {
+                $project: {
+                    _id: 0,
+                    date: "$_id.createdAt",
+                    year: "$_id.year",
+                    month: "$_id.month",
+                    count: 1,
+                },
+            },
+            {
+                $sort: {
+                    year: 1,
+                    month: 1,
+                    date: 1,
+                },
+            },
+        ];
+        const orderCounts = await Order.aggregate(pipeline);
+        if (orderCounts.length === 0) {
+            return res.status(200).json({ message: "No orders found" });
+        }
+        const result = orderCounts.map(({ date, year, month, count }) => { return { date, year, month, orderCount: count }; });
+        return res.json({ status: 1, data: result });
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ status: 0, message: err.message });
+    }
+};

@@ -6,6 +6,7 @@ const { upload, upload1 } = require("../utils/upload");
 // Get all orders
 router.get("/orders", orderController.getAllOrders);
 router.get("/ordersforSubAdmin", [authJwt.isAdmin], orderController.getAllOrdersforSubAdmin);
+router.get("/countordersforSubAdmin", [authJwt.isAdmin], orderController.getOrderCountsByMonthforSubAdmin);
 
 // Create a new order
 router.post("/orders", orderController.createOrder);
