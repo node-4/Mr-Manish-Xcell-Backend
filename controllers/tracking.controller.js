@@ -46,23 +46,6 @@ const getOrderTrackingById = async (req, res) => {
         res.status(500).json({ status: 0, message: error.message });
     }
 };
-
-// Get a single order tracking record by ID
-// const getOrderTrackingById = async (req, res) => {
-//     try {
-//         const orderTracking = await OrderTracking.find({ orderId: req.params.id });
-//         if (!orderTracking) {
-//             return res.status(404).json({ message: 'Order tracking record not found' });
-//         }
-//         res.status(200).json({
-//             data: orderTracking
-//         });
-//     } catch (error) {
-//         console.log(error);
-//         res.status(500).json({ message: error.message });
-//     }
-// };
-
 // Create a new order tracking record
 const createOrderTracking = async (req, res) => {
     const trackingUpdatedBy = req.user._id;

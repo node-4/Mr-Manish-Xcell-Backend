@@ -129,39 +129,6 @@ function generateOTP() {
     }
     return OTP;
 }
-// exports.loginwithotp = async (req, res) => {
-//     try {
-//         const { phone } = req.body;
-//         if (!phone) {
-//             return res
-//                 .status(200)
-//                 .send({ status: 0, message: "phone is required" });
-//             //return createResponse(res, 200, "phone number is required");
-//         }
-//         const user = await User.findOne({ phone });
-//         if (!user) {
-//             return res
-//                 .status(200)
-//                 .send({ status: 0, message: "user not found" });
-//             // return createResponse(res, 200, {status:0,"not registered"});
-//         }
-//         const otp = newOTP.generate(4, {
-//             alphabets: false,
-//             upperCase: false,
-//             specialChar: false,
-//         });
-//         user.otp = otp;
-//         await user.save();
-//       return  createResponse(res, 200, "otp successfully", {
-//             otp: otp,
-//             userId: user._id,
-//             data: user,
-//         });
-//     } catch (err) {
-//         console.log(err);
-//       return  createResponse(res, 500, "internal error " + err.message);
-//     }
-// };
 exports.verifyOTP = async (req, res) => {
     try {
         const { otp } = req.body;

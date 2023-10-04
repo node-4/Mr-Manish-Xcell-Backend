@@ -1,74 +1,7 @@
-// const bcrypt = require('bcryptjs/dist/bcrypt');
-// const User = require('../models/user.model');
-// const { createResponse } = require('../utils/response');
-
-// exports.getALlUsers = async (req, res) => {
-//     try {
-//         const users = await User.find().lean();
-//         if (users.length === 0) {
-//             return createResponse(res, 200, "users not found", users);
-//         }
-//        return createResponse(res, 200, "found", users);
-//     } catch (err) {
-//         console.log(err);
-//        return createResponse(res, 500, "internal server error " + err.message);
-//     }
-// };
-
-// exports.getUserById = async (req, res) => {
-//     try {
-//         const users = await User.findById(req.params.id).lean();
-//         if (users.length === 0) {
-//             return createResponse(res, 200, "users not found", users);
-//         }
-//        return createResponse(res, 200, "found", users);
-//     } catch (err) {
-//         console.log(err);
-//        return createResponse(res, 500, "internal server error " + err.message);
-//     }
-// };
-
-// exports.updateUser = async (req, res) => {
-//     try {
-//         const password = bcrypt.hashSync(req.body.password, 8);
-
-//         const {
-//             firstName, lastName, middleName, phone, email, customerId, dateOfBirth, gender,
-//             bloodGroup, doctorName, hospitalName, maritalStatus, father_spouseName, relationship,
-//             firstLineAddress, secondLineAddress, country, state, district, pincode
-//         } = req.body;
-//         const user = await User.findById(req.params.id, {
-//             firstName, lastName, middleName, phone, email, password, customerId, dateOfBirth, gender,
-//             bloodGroup, doctorName, hospitalName, maritalStatus, father_spouseName, relationship,
-//             firstLineAddress, secondLineAddress, country, state, district, pincode
-//         }, { new: true });
-//         if (!user) {
-//             return createResponse(res, 402, "update user failed");
-//         }
-//        return createResponse(res, 200, "user updated", user);
-//     } catch (err) {
-//         console.log(err);
-//        return createResponse(res, 500, "internal server error " + err.message);
-//     }
-// }
-// exports.deleteUser = async (req, res) => {
-//     try {
-//         const user = await User.findByIdAndDelete(req.params.id);
-//         if (!user) {
-//             return createResponse(res, 200, "user not found");
-//         }
-//        return createResponse(res, 200, "user deleted", user);
-//     } catch (err) {
-//         console.log(err);
-//        return createResponse(res, 500, "internal server error " + err.message);
-//     }
-// }
-
 const bcrypt = require("bcryptjs/dist/bcrypt");
 const User = require("../models/user.model");
 const { createResponse } = require("../utils/response");
 const adminModel = require("../models/admin.model");
-
 exports.getALlUsers = async (req, res) => {
     try {
         const users = await User.find().lean();

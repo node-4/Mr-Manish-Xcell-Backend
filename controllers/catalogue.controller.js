@@ -11,12 +11,6 @@ exports.createCatalogue = async (req, res) => {
             deliveryFee,
             tax_and_charges,
         } = req.body;
-
-        // Validation: Check if all required fields are present
-        // if (!orderId || !name || !therapyName || !packages || !total || !deliveryFee || !tax_and_charges || !totalAmount) {
-        //     return res.status(400).json({ message: "All fields are required." });
-        // }
-
         let totalSum = 0;
         packages.forEach((package) => {
             totalSum += package.amount * package.quantity;
@@ -69,8 +63,6 @@ exports.getCatalogues = async (req, res) => {
         res.status(500).json({ status: 0, message: err.message });
     }
 };
-
-// Get a single catalogue item by ID
 exports.getCatalogueById = async (req, res) => {
     try {
         const catalogueItem = await Catalogue.findById(req.params.id);
