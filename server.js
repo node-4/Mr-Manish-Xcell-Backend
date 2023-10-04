@@ -3,6 +3,7 @@ const bodyParser = require("body-parser");
 const cors = require("cors");
 const mongoose = require("mongoose");
 require("dotenv").config();
+const path = require("path");
 const compression = require("compression");
 const serverless = require("serverless-http");
 const app = express();
@@ -14,7 +15,7 @@ app.use(cors());
 // app.use(morgan("tiny"))
 
 if (process.env.NODE_ENV == "production") {
-    console.log = function () {};
+    console.log = function () { };
 }
 //console.log = function () {};
 app.get("/", (req, res) => {
@@ -37,7 +38,7 @@ app.use("/api/v1", require("./routes/terms.route"));
 app.use("/api/v1", require("./routes/support.ticket"));
 app.use("/api/v1/invoices", require("./routes/invoice.route"));
 app.use("/api/v1", require("./routes/privacy.route"));
-
+app.use('/orders.xlsx', express.static(path.join(__dirname, './orders.xlsx')))
 require("./routes/payment.route")(app);
 mongoose.Promise = global.Promise;
 mongoose.set("strictQuery", true);

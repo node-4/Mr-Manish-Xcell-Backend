@@ -328,7 +328,6 @@ exports.import = async (req, res) => {
         const sheet = workbook.Sheets[workbook.SheetNames[0]];
         const orders = XLSX.utils.sheet_to_json(sheet);
         console.log(orders);
-
         orders.forEach(async (orderData) => {
             const orderObj = {
                 // catalogueId: orderData["Catalogue ID"],
@@ -470,13 +469,7 @@ exports.download = async (req, res) => {
         worksheet.addRows(data);
         const filePath = "./orders.xlsx";
         await workbook.xlsx.writeFile(filePath);
-        res.download(filePath, "orders.xlsx", (err) => {
-            if (err) {
-                console.error(err.message);
-                res.status(500).send("Server Error");
-            }
-            fs.unlinkSync(filePath);
-        });
+        return res.status(200).send({ message: "Data found", data: filePath });
     } catch (err) {
         console.error(err.message);
         res.status(500).send("Server Error");
