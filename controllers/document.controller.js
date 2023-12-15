@@ -4,20 +4,11 @@ exports.getAllDocuments = async (req, res, next) => {
     try {
         const documents = await Document.find({ userId: req.user._id });
         if (documents.length === 0) {
-            return res.status(200).json({
-                status: 0,
-                success: false,
-                message: "documents not found",
-                data: [],
-            });
+            return res.status(200).json({ status: 0, success: false, message: "documents not found", data: [], });
         }
         return res.status(200).json({ status: 1, success: true, data: documents });
     } catch (error) {
-        res.status(500).json({
-            status: 0,
-            success: false,
-            message: error.message,
-        });
+        return res.status(500).json({ status: 0, success: false, message: error.message, });
     }
 };
 exports.createDocument = async (req, res, next) => {
@@ -40,19 +31,11 @@ exports.getDocumentById = async (req, res, next) => {
     try {
         const document = await Document.findById(req.params.id).lean();
         if (!document) {
-            return res.status(200).json({
-                status: 0,
-                success: false,
-                message: "Document not found",
-            });
+            return res.status(200).json({ status: 0, success: false, message: "Document not found", });
         }
         return res.status(200).json({ status: 1, success: true, data: document });
     } catch (error) {
-        return res.status(500).json({
-            status: 0,
-            success: false,
-            message: error.message,
-        });
+        return res.status(500).json({ status: 0, success: false, message: error.message, });
     }
 };
 exports.updateDocumentById = async (req, res, next) => {
@@ -66,37 +49,24 @@ exports.updateDocumentById = async (req, res, next) => {
                 fileUrl = req.file ? req.file.path : "";
             }
             let obj = {
-                userId: req.user._id,
-                document: fileUrl || document.document
+                userId: req.user._id, document: fileUrl || document.document
             }
             const update = await Document.findByIdAndUpdate(document._id, obj, { new: true, runValidators: true, });
             return res.status(200).json({ status: 1, success: true, data: update });
         }
     } catch (error) {
-        return res.status(500).json({
-            status: 0,
-            success: false,
-            message: error.message,
-        });
+        return res.status(500).json({ status: 0, success: false, message: error.message, });
     }
 };
 exports.deleteDocumentById = async (req, res, next) => {
     try {
         const document = await Document.findByIdAndDelete(req.params.id);
         if (!document) {
-            return res.status(404).json({
-                status: 0,
-                success: false,
-                message: "Document not found",
-            });
+            return res.status(404).json({ status: 0, success: false, message: "Document not found", });
         }
         return res.status(200).json({ status: 1, success: true, data: {} });
     } catch (error) {
-        return res.status(500).json({
-            status: 0,
-            success: false,
-            message: error.message,
-        });
+        return res.status(500).json({ status: 0, success: false, message: error.message, });
     }
 };
 exports.getMonthlyDocumentOfUser = async (req, res) => {
@@ -105,21 +75,10 @@ exports.getMonthlyDocumentOfUser = async (req, res) => {
         const docs = await Document.aggregate([
             { $match: { userId: new mongoose.Types.ObjectId(id) } },
             {
-                $group: {
-                    _id: {
-                        month: { $month: "$createdAt" },
-                        year: { $year: "$createdAt" },
-                    },
-                    documents: { $push: "$$ROOT" },
-                },
+                $group: { _id: { month: { $month: "$createdAt" }, year: { $year: "$createdAt" }, }, documents: { $push: "$$ROOT" }, },
             },
             {
-                $project: {
-                    month: "$_id.month",
-                    year: "$_id.year",
-                    documents: 1,
-                    _id: 0,
-                },
+                $project: { month: "$_id.month", year: "$_id.year", documents: 1, _id: 0, },
             },
         ]);
         const monthNames = [
@@ -138,11 +97,7 @@ exports.getMonthlyDocumentOfUser = async (req, res) => {
         ];
         // console.log(docs);
         const data = docs.map((doc) => {
-            return {
-                month: monthNames[doc.month - 1],
-                year: doc.year,
-                documents: doc.documents,
-            };
+            return { month: monthNames[doc.month - 1], year: doc.year, documents: doc.documents, };
         });
         // console.log(data);
         return res.status(200).json({ status: 1, data: data });

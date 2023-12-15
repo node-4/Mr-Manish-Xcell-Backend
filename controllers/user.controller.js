@@ -2,21 +2,18 @@ const bcrypt = require("bcryptjs/dist/bcrypt");
 const User = require("../models/user.model");
 const { createResponse } = require("../utils/response");
 const adminModel = require("../models/admin.model");
+const fs = require("fs");
+const ExcelJS = require("exceljs");
 exports.getALlUsers = async (req, res) => {
     try {
         const users = await User.find().lean();
         if (users.length === 0) {
-            return createResponse(res, 200, "users not found", {
-                status: 0,
-                data: users,
-            });
+            return createResponse(res, 200, "users not found", { status: 0, data: users, });
         }
-        return createResponse(res, 200, "found", { status: 1, data: users });
+        return createResponse(res, 200, "found", users);
     } catch (err) {
         console.log(err);
-        return createResponse(res, 500, "internal server error " + err.message, {
-            status: 0,
-        });
+        return createResponse(res, 500, "internal server error " + err.message, { status: 0, });
     }
 };
 exports.getUserById = async (req, res) => {
@@ -138,9 +135,6 @@ exports.getAllUsersforSubAdmin = async (req, res) => {
         return createResponse(res, 500, "Internal server error " + err.message, { status: 0, });
     }
 };
-const fs = require("fs");
-const XLSX = require("xlsx");
-const ExcelJS = require("exceljs");
 exports.download = async (req, res) => {
     try {
         let query = { ...req.query };

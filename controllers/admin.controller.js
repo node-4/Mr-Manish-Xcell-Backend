@@ -5,13 +5,10 @@ const ObjectId = require("mongoose").Types.ObjectId;
 const Admin = require("../models/admin.model");
 const Branch = require("../models/branch.model");
 const User = require("../models/user.model");
-
 exports.signUp = async (req, res) => {
     try {
         if (req.body.confirmPassword !== req.body.password) {
-            return res
-                .status(403)
-                .send({ status: 0, message: "Passwords do not match" });
+            return res.status(403).send({ status: 0, message: "Passwords do not match" });
         }
         if (req.body.role === "sub-Admin") {
             if (!req.body.branch) {
@@ -20,10 +17,7 @@ exports.signUp = async (req, res) => {
         }
         const adminExists = await Admin.findOne({ $or: [{ email: req.body.email }, { phone: req.body.phone }], });
         if (adminExists) {
-            return res.status(400).send({
-                status: 0,
-                message: "user already exists with this email or phone number",
-            });
+            return res.status(400).send({ status: 0, message: "user already exists with this email or phone number", });
         }
         const adminObj = {
             firstName: req.body.firstName,
@@ -35,30 +29,18 @@ exports.signUp = async (req, res) => {
             confirmPassword: bcrypt.hashSync(req.body.confirmPassword, 8),
             password: bcrypt.hashSync(req.body.password, 8),
         };
-
         const adminCreated = await Admin.create(adminObj);
-
-        console.log(
-            `#### ${adminCreated.email} ${adminCreated._id} created ####`
-        );
+        console.log(`#### ${adminCreated.email} ${adminCreated._id} created ####`);
         if (req.body.role === "sub-Admin") {
             const branch = await Branch.findOne({ branch: adminObj.branch });
             branch.members.push(adminCreated._id);
             await branch.save();
             // console.log(branch);
         }
-
-        res.status(201).send({
-            status: 1,
-            message: "signed up successfully",
-            data: adminCreated,
-        });
+        return res.status(201).send({ status: 1, message: "signed up successfully", data: adminCreated, });
     } catch (err) {
         console.log("#### error while Admin sign up #### ", err.message);
-        res.status(500).send({
-            status: 0,
-            message: "Internal server error while creating Admin",
-        });
+        return res.status(500).send({ status: 0, message: "Internal server error while creating Admin", });
     }
 };
 exports.signIn = async (req, res) => {
@@ -84,13 +66,10 @@ exports.signIn = async (req, res) => {
 
         const accessToken = jwt.sign({ id: admin.email, role: admin.role }, authConfig.secret, { expiresIn: authConfig.accessTokenTime, });
         console.log(`#### ${admin.email} ${admin._id} logged in ####`);
-        res.status(200).send({ status: 1, adminId: admin._id, email: admin.email, accessToken: accessToken, });
+        return res.status(200).send({ status: 1, adminId: admin._id, email: admin.email, accessToken: accessToken, });
     } catch (err) {
         console.log("#### Error while Admin signing in ##### ", err.message);
-        res.status(500).send({
-            status: 0,
-            message: "Internal server error while Admin signing in",
-        });
+        return res.status(500).send({ status: 0, message: "Internal server error while Admin signing in", });
     }
 };
 exports.refreshAccessToken = (req, res) => {
@@ -106,19 +85,13 @@ exports.deleteAdmin = async (req, res) => {
     try {
         const admin = await Admin.findByIdAndDelete(req.params.id);
         if (!admin) {
-            return res
-                .status(404)
-                .json({ status: 0, message: "Admin not found" });
+            return res.status(404).json({ status: 0, message: "Admin not found" });
         }
         console.log(`#### admin with < ${admin.email} >  deleted ####` + admin);
         return res.status(200).json({ status: 0, message: "Admin deleted" });
     } catch (err) {
         console.log(err.message);
-        return res.status(500).json({
-            status: 0,
-            message: "server error while deleting admin",
-            error: err.message,
-        });
+        return res.status(500).json({ status: 0, message: "server error while deleting admin", error: err.message, });
     }
 };
 exports.getAdmins = async (req, res) => {
@@ -136,11 +109,7 @@ exports.getAdmins = async (req, res) => {
         return res.status(200).json({ status: 1, data: admins });
     } catch (err) {
         console.log(err.message);
-        return res.status(500).json({
-            status: 0,
-            message: "server error while getting admins",
-            error: err.message,
-        });
+        return res.status(500).json({ status: 0, message: "server error while getting admins", error: err.message, });
     }
 };
 exports.updateAdmin = async (req, res) => {
@@ -168,17 +137,10 @@ exports.updateAdmin = async (req, res) => {
                 .json({ status: 0, message: "Admin not found" });
         }
 
-        res.status(200).send({
-            status: 1,
-            message: "Admin updated successfully",
-            data: admin,
-        });
+        return res.status(200).send({ status: 1, message: "Admin updated successfully", data: admin, });
     } catch (err) {
         console.log("#### Error while updating admin data #### /n", err);
-        res.status(500).send({
-            status: 0,
-            message: "Internal server error while updating admin data",
-        });
+        return res.status(500).send({ status: 0, message: "Internal server error while updating admin data", });
     }
 };
 exports.findByAdminId = async (req, res) => {
@@ -191,14 +153,8 @@ exports.findByAdminId = async (req, res) => {
         }
         return res.status(200).json({ status: 1, data: admin });
     } catch (err) {
-        console.log(
-            "#### Error while searching for the admin #### ",
-            err.message
-        );
-        res.status(500).send({
-            status: 0,
-            message: "Internal server error while fetching data",
-        });
+        console.log("#### Error while searching for the admin #### ", err.message);
+        return res.status(500).send({ status: 0, message: "Internal server error while fetching data", });
     }
 };
 exports.assignUserTosubAdmin = async (req, res, next) => {

@@ -1,10 +1,8 @@
 const Invoice = require("../models/invoice.model");
 const User = require("../models/user.model");
 const Order = require("../models/order.model");
-
 const { v4: uuidv4 } = require("uuid");
 // const Invoice = require('../models/invoice');
-
 exports.createInvoice = async (req, res) => {
     try {
         let invoiceId = uuidv4();
@@ -13,15 +11,10 @@ exports.createInvoice = async (req, res) => {
         while (await Invoice.findOne({ invoiceId })) {
             invoiceId = uuidv4();
         }
-        const order = await Order.findOne({ _id: req.body.orderId }).populate(
-            "catalogueId"
-        );
+        const order = await Order.findOne({ _id: req.body.orderId }).populate("catalogueId");
         if (!order) {
-            return res
-                .status(200)
-                .send({ status: 0, message: "order not found" });
+            return res.status(200).send({ status: 0, message: "order not found" });
         }
-
         const invoiceObj = {
             userId: req.body.userId,
             name: req.body.name,
@@ -50,16 +43,13 @@ exports.createInvoice = async (req, res) => {
         invoiceObj.product = products;
         invoiceObj.totalAmount = totalAmount;
 
-        const invoice = await Invoice.create(invoiceObj);
-
-        res.status(201).json({ status: 1, data: invoice });
+        const invoice = await Invoice.create(invoiceObj)
+        return res.status(201).json({ status: 1, data: invoice });
     } catch (err) {
         console.error(err);
-        res.status(500).json({ status: 0, message: "Server Error" });
+        return res.status(500).json({ status: 0, message: "Server Error" });
     }
 };
-
-// Get all invoices
 exports.getInvoices = async (req, res) => {
     try {
         let queryObj = {};
@@ -77,34 +67,26 @@ exports.getInvoices = async (req, res) => {
         }
         const invoices = await Invoice.find(queryObj);
         if (invoices.length === 0) {
-            return res
-                .status(200)
-                .json({ status: 0, message: "invoice not found" });
+            return res.status(200).json({ status: 0, message: "invoice not found" });
         }
-        res.status(200).json({ status: 1, data: invoices });
+        return res.status(200).json({ status: 1, data: invoices });
     } catch (err) {
         console.error(err);
-        res.status(500).json({ status: 0, message: "Server Error" });
+        return res.status(500).json({ status: 0, message: "Server Error" });
     }
 };
-
-// Get a single invoice
 exports.getInvoice = async (req, res) => {
     try {
         const invoice = await Invoice.findById(req.params.id).lean();
         if (!invoice) {
-            return res
-                .status(404)
-                .json({ status: 0, message: "Invoice not found" });
+            return res.status(404).json({ status: 0, message: "Invoice not found" });
         }
-        res.status(200).json({ status: 1, data: invoice });
+        return res.status(200).json({ status: 1, data: invoice });
     } catch (err) {
         console.error(err);
-        res.status(500).json({ status: 0, message: "Server Error" });
+        return res.status(500).json({ status: 0, message: "Server Error" });
     }
 };
-
-// Update an invoice
 exports.updateInvoice = async (req, res) => {
     try {
         const invoice = await Invoice.findByIdAndUpdate(
@@ -115,33 +97,23 @@ exports.updateInvoice = async (req, res) => {
             }
         );
         if (!invoice) {
-            return res
-                .status(200)
-                .json({ status: 0, message: "Invoice not found" });
+            return res.status(200).json({ status: 0, message: "Invoice not found" });
         }
-        res.status(200).json({
-            status: 1,
-            message: "Invoice updated",
-            data: invoice,
-        });
+        return res.status(200).json({ status: 1, message: "Invoice updated", data: invoice, });
     } catch (err) {
         console.error(err);
-        res.status(500).json({ status: 0, message: "Server Error" });
+        return res.status(500).json({ status: 0, message: "Server Error" });
     }
 };
-
-// Delete an invoice
 exports.deleteInvoice = async (req, res) => {
     try {
         const invoice = await Invoice.findByIdAndDelete(req.params.id);
         if (!invoice) {
-            return res
-                .status(404)
-                .json({ status: 0, message: "Invoice not found" });
+            return res.status(404).json({ status: 0, message: "Invoice not found" });
         }
-        res.status(204).json({ status: 1, message: "Invoice deleted" });
+        return res.status(204).json({ status: 1, message: "Invoice deleted" });
     } catch (err) {
         console.error(err);
-        res.status(500).json({ status: 0, message: "Server Error" });
+        return res.status(500).json({ status: 0, message: "Server Error" });
     }
 };

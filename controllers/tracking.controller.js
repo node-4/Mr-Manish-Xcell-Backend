@@ -3,7 +3,6 @@ const mongoose = require("mongoose");
 const Notification = require("../models/notification.model");
 const Order = require("../models/order.model");
 const Catalogue = require("../models/catalogue.model");
-// Get all order tracking records
 const getOrderTrackings = async (req, res) => {
     try {
         let queryObj = {};
@@ -25,7 +24,6 @@ const getOrderTrackings = async (req, res) => {
         res.status(500).json({ status: 0, message: error.message });
     }
 };
-
 const getOrderTrackingById = async (req, res) => {
     try {
         const orderId = req.params.id;
@@ -46,7 +44,6 @@ const getOrderTrackingById = async (req, res) => {
         res.status(500).json({ status: 0, message: error.message });
     }
 };
-// Create a new order tracking record
 const createOrderTracking = async (req, res) => {
     const trackingUpdatedBy = req.user._id;
     const trackingUpdatedByRole = "updated by " + req.user.role;
@@ -100,8 +97,6 @@ const createOrderTracking = async (req, res) => {
         res.status(400).json({ status: 0, message: error.message });
     }
 };
-
-// Update an existing order tracking record
 const updateOrderTracking = async (req, res) => {
     try {
         const {
@@ -138,8 +133,6 @@ const updateOrderTracking = async (req, res) => {
         res.status(400).json({ status: 0, message: error.message });
     }
 };
-
-// Delete an order tracking record by ID
 const deleteOrderTracking = async (req, res) => {
     try {
         const orderTracking = await OrderTracking.findById(req.params.id);
@@ -176,12 +169,4 @@ const trackingForAdmin = async (req, res) => {
         res.status(500).json({ status: 0, message: error.message });
     }
 };
-
-module.exports = {
-    getOrderTrackings,
-    getOrderTrackingById,
-    createOrderTracking,
-    updateOrderTracking,
-    deleteOrderTracking,
-    trackingForAdmin,
-};
+module.exports = { getOrderTrackings, getOrderTrackingById, createOrderTracking, updateOrderTracking, deleteOrderTracking, trackingForAdmin, };

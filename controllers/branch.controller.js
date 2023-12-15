@@ -1,6 +1,4 @@
 const Branch = require("../models/branch.model");
-
-// Get all branchs
 exports.getAllBranchs = async (req, res, next) => {
     try {
         let queryObj = {};
@@ -9,122 +7,64 @@ exports.getAllBranchs = async (req, res, next) => {
         }
         const branchs = await Branch.find(queryObj).populate("members");
         if (branchs.length === 0) {
-            return res
-                .status(200)
-                .json({ status: 0, message: "Branch not found" });
+            return res.status(200).json({ status: 0, message: "Branch not found" });
         }
-
-        res.status(200).json({ status: 1, success: true, data: branchs });
+        return res.status(200).json({ status: 1, success: true, data: branchs });
     } catch (error) {
         console.log(error);
-        res.status(500).json({
-            status: 0,
-            success: false,
-            error: error.message,
-        });
+        return res.status(500).json({ status: 0, success: false, error: error.message, });
     }
 };
-
-// Create a new branch
 exports.createBranch = async (req, res, next) => {
     try {
         const { branch, gstId, address, licence, phone } = req.body;
         if (!branch || !gstId || !address || !licence || !phone) {
-            return res.status(200).json({
-                status: 0,
-                success: false,
-                message: "Please enter all fields",
-            });
+            return res.status(200).json({ status: 0, success: false, message: "Please enter all fields", });
         }
         const branchExists = await Branch.findOne({ branch });
         if (branchExists) {
-            return res.status(200).json({
-                status: 0,
-                success: false,
-                message: "Branch already exists with name " + branch,
-            });
+            return res.status(200).json({ status: 0, success: false, message: "Branch already exists with name " + branch, });
         }
         const newBranch = await Branch.create(req.body);
-        res.status(201).json({ status: 1, success: true, data: newBranch });
+        return res.status(201).json({ status: 1, success: true, data: newBranch });
     } catch (error) {
         console.log(error);
-
-        res.status(500).json({
-            status: 0,
-            success: false,
-            error: error.message,
-        });
+        return res.status(500).json({ status: 0, success: false, error: error.message, });
     }
 };
-
-// Get a single branch by ID
 exports.getBranchById = async (req, res, next) => {
     try {
-        const branch = await Branch.findById(req.params.id)
-            .lean()
-            .populate("members");
+        const branch = await Branch.findById(req.params.id).lean().populate("members");
         if (!branch) {
-            return res.status(200).json({
-                status: 0,
-                success: false,
-                message: "Branch not found",
-            });
+            return res.status(200).json({ status: 0, success: false, message: "Branch not found", });
         }
-        res.status(200).json({ status: 1, success: true, data: branch });
+        return res.status(200).json({ status: 1, success: true, data: branch });
     } catch (error) {
         console.log(error);
-
-        res.status(500).json({
-            status: 0,
-            success: false,
-            error: error.message,
-        });
+        return res.status(500).json({ status: 0, success: false, error: error.message, });
     }
 };
-
-// Update a branch by ID
 exports.updateBranchById = async (req, res, next) => {
     try {
-        const branch = await Branch.findByIdAndUpdate(req.params.id, req.body, {
-            new: true,
-        });
+        const branch = await Branch.findByIdAndUpdate(req.params.id, req.body, { new: true, });
         if (!branch) {
-            return res.status(200).json({
-                status: 0,
-                success: false,
-                message: "Branch not found",
-            });
+            return res.status(200).json({ status: 0, success: false, message: "Branch not found", });
         }
-        res.status(200).json({ status: 1, success: true, data: branch });
+        return res.status(200).json({ status: 1, success: true, data: branch });
     } catch (error) {
         console.log(error);
-
-        res.status(500).json({
-            status: 0,
-            success: false,
-            error: error.message,
-        });
+        return res.status(500).json({ status: 0, success: false, error: error.message, });
     }
 };
-
-// Delete a branch by ID
 exports.deleteBranchById = async (req, res, next) => {
     try {
         const branch = await Branch.findByIdAndDelete(req.params.id);
         if (!branch) {
-            return res.status(200).json({
-                status: 0,
-                success: false,
-                message: "Branch not found",
-            });
+            return res.status(200).json({ status: 0, success: false, message: "Branch not found", });
         }
-        res.status(200).json({ status: 1, success: true, message: "deleted" });
+        return res.status(200).json({ status: 1, success: true, message: "deleted" });
     } catch (error) {
         console.log(error);
-        res.status(500).json({
-            status: 0,
-            success: false,
-            error: error.message,
-        });
+        return res.status(500).json({ status: 0, success: false, error: error.message, });
     }
 };

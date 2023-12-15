@@ -10,14 +10,10 @@ const app = express();
 app.use(compression({ threshold: 1008 }));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-// const morgan = require("morgan");
 app.use(cors());
-// app.use(morgan("tiny"))
-
 if (process.env.NODE_ENV == "production") {
     console.log = function () { };
 }
-//console.log = function () {};
 app.get("/", (req, res) => {
     res.send("Hello World!");
 });
@@ -42,28 +38,7 @@ app.use('/orders.xlsx', express.static(path.join(__dirname, './orders.xlsx')))
 require("./routes/payment.route")(app);
 mongoose.Promise = global.Promise;
 mongoose.set("strictQuery", true);
-
-mongoose
-    .connect(process.env.DB_URL, {
-        useNewUrlParser: true,
-        useUnifiedTopology: true,
-    })
-    .then(() => console.log("Connected to MongoDB Atlas..."))
-    .catch((err) =>
-        console.error(
-            "Error occurred while connecting to MongoDB Atlas...\n",
-            err
-        )
-    );
-
-// mongoose.connect(process.env.DB_URL, (err) => {
-//     if (!err) {
-//         console.log("MongoDB Connection Succeeded.");
-//     } else {
-//         console.log("Error in DB connection: " + err);
-//     }
-// });
-
+mongoose.connect(process.env.DB_URL, { useNewUrlParser: true, useUnifiedTopology: true, }).then(() => console.log("Connected to MongoDB Atlas...")).catch((err) => console.error("Error occurred while connecting to MongoDB Atlas...\n", err));
 app.listen(process.env.PORT, () => {
     console.log(`Listening on port ${process.env.PORT}!`);
 });

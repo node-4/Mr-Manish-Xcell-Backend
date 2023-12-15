@@ -2,14 +2,16 @@ const Order = require("../models/order.model");
 const User = require("../models/user.model");
 const adminModel = require("../models/admin.model");
 const Catalogue = require("../models/catalogue.model");
+const fs = require("fs");
+const XLSX = require("xlsx");
+const ExcelJS = require("exceljs");
+
 exports.createOrder = async (req, res) => {
     try {
         const { catalogueId, userId, totalPackages, deliveryDate } = req.body;
         const user = await User.findById(userId);
         if (!user) {
-            return res
-                .status(200)
-                .json({ status: 0, message: "User not found" });
+            return res.status(200).json({ status: 0, message: "User not found" });
         }
         const catalogue = await Catalogue.findById(catalogueId);
         console.log(catalogue);
@@ -20,42 +22,30 @@ exports.createOrder = async (req, res) => {
             userId,
             deliveryDate,
             totalPackages,
-            address:
-                user.firstLineAddress +
-                " " +
-                user.firstLineAddress +
-                " " +
-                user.city +
-                " " +
-                user.state +
-                " " +
-                user.country +
-                " " +
-                user.pincode,
+            address: user.firstLineAddress + " " + user.firstLineAddress + " " + user.district + " " + user.state + " " + user.country + " " + user.pincode,
             placedOn: new Date(),
+            state: user.state,
+            city: user.district,
             orderStatus: "ongoing",
         });
-
         const savedOrder = await order.save();
 
-        res.status(201).json({
+        return res.status(201).json({
             status: 1,
             message: "Order created",
             data: savedOrder,
         });
     } catch (err) {
         console.log(err);
-        res.status(500).json({ status: 0, message: err.message });
+        return res.status(500).json({ status: 0, message: err.message });
     }
 };
-
 exports.getAllOrders = async (req, res) => {
     try {
         let queryObj = {};
         if (req.query.userId) {
             queryObj.userId = req.query.userId;
         }
-
         if (req.query.orderStatus) {
             queryObj.orderStatus = req.query.orderStatus;
         }
@@ -83,20 +73,16 @@ exports.getAllOrders = async (req, res) => {
         //     const dateString = req.query.placedOn.trim().replace(/\//g, '-');
         //     queryObj.placedOn = { $regex: new RegExp(dateString, 'i') };
         // }
-
-        const orders = await Order.find(queryObj)
-            .populate("catalogueId")
-            .lean()
-            .sort({ createdAt: -1 });
+        const orders = await Order.find(queryObj).populate("catalogueId").lean().sort({ createdAt: -1 });
         if (orders.length === 0) {
             return res
                 .status(200)
                 .json({ status: 0, message: "No orders found" });
         }
-        res.json({ status: 1, data: orders });
+        return res.json({ status: 1, data: orders });
     } catch (err) {
         console.log(err);
-        res.status(500).json({ status: 0, message: err.message });
+        return res.status(500).json({ status: 0, message: err.message });
     }
 };
 exports.getOrderById = async (req, res) => {
@@ -114,10 +100,9 @@ exports.getOrderById = async (req, res) => {
         res.json({ status: 1, data: order });
     } catch (err) {
         console.log(err);
-        res.status(500).json({ status: 0, message: err.message });
+        return res.status(500).json({ status: 0, message: err.message });
     }
 };
-
 exports.updateOrder = async (req, res) => {
     try {
         const order = await Order.findById(req.params.id);
@@ -150,10 +135,9 @@ exports.updateOrder = async (req, res) => {
         return res.json({ status: 1, message: "Order updated", data: updatedOrder });
     } catch (err) {
         console.log(err);
-        res.status(500).json({ status: 0, message: err.message });
+        return res.status(500).json({ status: 0, message: err.message });
     }
 };
-
 exports.deleteOrder = async (req, res) => {
     try {
         const order = await Order.findByIdAndDelete(req.params.id);
@@ -161,10 +145,10 @@ exports.deleteOrder = async (req, res) => {
         if (!order) {
             return res.status(200).json({ message: "Order not found" });
         }
-        res.json({ status: 1, message: "Order deleted" });
+        return res.json({ status: 1, message: "Order deleted" });
     } catch (err) {
         console.log(err);
-        res.status(500).json({ status: 0, message: err.message });
+        return res.status(500).json({ status: 0, message: err.message });
     }
 };
 exports.getOrderCountsByMonth = async (req, res) => {
@@ -221,7 +205,6 @@ exports.getOrderCountsByMonth = async (req, res) => {
         return res.status(500).json({ status: 0, message: err.message });
     }
 };
-const fs = require("fs");
 exports.import = async (req, res) => {
     try {
         console.log(req.file);
@@ -256,80 +239,12 @@ exports.import = async (req, res) => {
             }
         });
 
-        res.status(200).json({ message: "Data uploaded successfully" });
+        return res.status(200).json({ message: "Data uploaded successfully" });
     } catch (error) {
         console.log(error);
-        res.status(500).json({ status: 0, message: error.message });
+        return res.status(500).json({ status: 0, message: error.message });
     }
 };
-const XLSX = require("xlsx");
-// const Order = require("../models/Order");
-const AdmZip = require("adm-zip");
-// GET all orders
-// exports.download = async (req, res) => {
-//     try {
-//         let query = { ...req.query };
-//         const orders = await Order.find(query).populate("catalogueId");
-//         // Convert orders data to array of arrays (rows and columns)
-
-//         const data = orders.map((order, index) => {
-//             return [
-//                 index + 1,
-//                 order.name,
-//                 order.customerId,
-//                 order.orderType,
-//                 order.orderDate,
-//                 order.city,
-//                 order.state,
-//                 order.totalAmount,
-//                 order.totalPackages,
-//             ];
-//         });
-//         // Replace "customerId" with "Patient ID"
-//         data.unshift([
-//             "sr No",
-//             "Patients",
-//             "Patient ID",
-//             "Patient Order Type",
-//             "Order Date",
-//             "City",
-//             "State",
-//             "Invoice Amount",
-//             "Total No of Boxes",
-//         ]);
-//         // Create a new workbook
-//         const workbook = XLSX.utils.book_new();
-//         // Add a new worksheet to the workbook
-//         const worksheet = XLSX.utils.aoa_to_sheet(data);
-//         XLSX.utils.book_append_sheet(workbook, worksheet, "Orders");
-//         // Write the workbook to a buffer
-//         const buffer = XLSX.write(workbook, {
-//             type: "buffer",
-//             bookType: "xlsx",
-//         });
-//         const zip = new AdmZip(buffer);
-//         const zipEntries = zip.getEntries();
-//         const firstEntry = zipEntries[0];
-//         const dataBuffer = zip.readAsText(firstEntry);
-
-//         // Set the response headers
-//         res.setHeader(
-//             "Content-Type",
-//             "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-//         );
-//         res.setHeader(
-//             "Content-Disposition",
-//             "attachment; filename=orders.xlsx"
-//         );
-//         // Send the decompressed data as the response
-//         res.send(dataBuffer);
-//     } catch (err) {
-//         console.error(err.message);
-//         res.status(500).send("Server Error");
-//     }
-// };
-const exceljs = require("exceljs");
-const ExcelJS = require("exceljs");
 exports.download = async (req, res) => {
     try {
         let query = { ...req.query };
@@ -375,7 +290,7 @@ exports.download = async (req, res) => {
         return res.status(200).send({ message: "Data found", data: filePath });
     } catch (err) {
         console.error(err.message);
-        res.status(500).send("Server Error");
+        return res.status(500).send("Server Error");
     }
 };
 exports.addOrder = async (req, res) => {
@@ -404,10 +319,10 @@ exports.addOrder = async (req, res) => {
         }
 
         const order1 = await Order.create(req.body);
-        res.status(201).json({ status: 1, data: order1 });
+        return res.status(201).json({ status: 1, data: order1 });
     } catch (error) {
         console.log(error);
-        res.status(500).json({ status: 0, message: error.message });
+        return res.status(500).json({ status: 0, message: error.message });
     }
 };
 exports.getAllOrdersforSubAdmin = async (req, res) => {
@@ -451,7 +366,7 @@ exports.getAllOrdersforSubAdmin = async (req, res) => {
         res.json({ status: 1, data: orders });
     } catch (err) {
         console.log(err);
-        res.status(500).json({ status: 0, message: err.message });
+        return res.status(500).json({ status: 0, message: err.message });
     }
 };
 exports.getOrderCountsByMonthforSubAdmin = async (req, res) => {

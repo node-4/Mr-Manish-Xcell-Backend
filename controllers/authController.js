@@ -41,15 +41,11 @@ exports.loginwithotp = async (req, res) => {
     try {
         const { phone } = req.body;
         if (!phone) {
-            return res
-                .status(200)
-                .send({ status: 0, message: "phone is required" });
+            return res.status(200).send({ status: 0, message: "phone is required" });
         }
         const user = await User.findOne({ phone });
         if (!user) {
-            return res
-                .status(200)
-                .send({ status: 0, message: "user not found" });
+            return res.status(200).send({ status: 0, message: "user not found" });
         }
         const otp = generateOTP();
         console.log(otp);
@@ -87,7 +83,6 @@ exports.loginwithotp = async (req, res) => {
         //     .catch(function (error) {
         //         console.error(error);
         //     });
-
         const options = {
             method: "POST",
             url: "https://control.msg91.com/api/v5/otp?mobile=&template_id=",
@@ -98,24 +93,15 @@ exports.loginwithotp = async (req, res) => {
             },
             data: {
                 template_id: "6458d399d6fc052d7350be62",
-                otp: "1235",
-                mobile: "919358122205",
+                sender: "fromapi",
+                otp: otp,
+                mobile: mobile,
             },
         };
-
-        axios
-            .request(options)
-            .then(function (response) {
-                console.log(response.data);
-            })
-            .catch(function (error) {
-                console.error(error);
-            });
-        return createResponse(res, 200, "otp successfully", {
-            otp: otp,
-            userId: user._id,
-            data: user,
-        });
+        axios.request(options).then(function (response) {
+            console.log(response);
+        }).catch(function (error) { console.error(error); });
+        return createResponse(res, 200, "otp successfully", { otp: otp, userId: user._id, data: user, });
     } catch (err) {
         console.log(err);
         return createResponse(res, 500, "internal error " + err.message);
@@ -131,61 +117,42 @@ function generateOTP() {
 }
 exports.verifyOTP = async (req, res) => {
     try {
-        const { otp } = req.body;
+        const { otp, deviceToken } = req.body;
         if (!otp) {
-            return res
-                .status(200)
-                .send({ status: 0, message: "OTP is required" });
-            // return createResponse(res, 400, "OTP is required");
+            return res.status(200).send({ status: 0, message: "OTP is required" });
         }
         const user = await User.findById(req.params.id);
         if (!user) {
-            return res
-                .status(200)
-                .send({ status: 0, message: "user not found" });
-            // return createResponse(res, 200, "user not found");
+            return res.status(200).send({ status: 0, message: "user not found" });
         }
         if (user.otp !== otp) {
-            return res
-                .status(200)
-                .send({ status: 0, message: "Invalid OTP !" });
-            // return createResponse(res, 400, "Invalid OTP !");
+            return res.status(200).send({ status: 0, message: "Invalid OTP !" });
         }
-        const accessToken = jwt.sign({ id: user._id }, authConfig.secret, {
-            expiresIn: authConfig.accessTokenTime,
-        });
-        return createResponse(res, 200, "access token successfully", { accessToken });
+        let update = await User.findByIdAndUpdate({ _id: user._id }, { $set: { deviceToken: deviceToken } }, { new: true });
+        if (update) {
+            const accessToken = jwt.sign({ id: user._id }, authConfig.secret, { expiresIn: authConfig.accessTokenTime, });
+            return createResponse(res, 200, "access token successfully", { accessToken });
+        }
     } catch (err) {
-        // console..log(err);
         console.log(err);
         return createResponse(res, 500, "internal error " + err.message);
     }
 };
-
 exports.loginWithEmail = async (req, res) => {
     try {
         const user = await User.findOne({ email: req.body.email });
         if (!user) {
             return res.status(200).send({ status: 0, message: "user not found" });
         }
-        const passwordIsValid = bcrypt.compareSync(
-            req.body.password,
-            user.password
-        );
+        const passwordIsValid = bcrypt.compareSync(req.body.password, user.password);
         if (!passwordIsValid) {
-            return res.status(200).send({
-                status: 0,
-                message: "Wrong password",
-            });
+            return res.status(200).send({ status: 0, message: "Wrong password", });
         }
-
-        const accessToken = jwt.sign({ id: user._id }, authConfig.secret, {
-            expiresIn: authConfig.accessTokenTime,
-        });
-        return createResponse(res, 200, "LoggedIn successfully", {
-            accessToken: accessToken,
-            userId: user._id,
-        });
+        let update = await User.findByIdAndUpdate({ _id: user._id }, { $set: { deviceToken: req.body.deviceToken } }, { new: true });
+        if (update) {
+            const accessToken = jwt.sign({ id: user._id }, authConfig.secret, { expiresIn: authConfig.accessTokenTime, });
+            return createResponse(res, 200, "LoggedIn successfully", { accessToken: accessToken, userId: user._id, });
+        }
     } catch (err) {
         console.log(err);
         return createResponse(res, 500, "internal error " + err.message);
