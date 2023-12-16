@@ -9,7 +9,9 @@ exports.createNotificationForMultipleRecipients = async (req, res) => {
             const user = await User.findById(req.body.recipients[i].userId).lean();
             if (user) {
                 if (req.body.sendType == "Both") {
-                    let x = await pushNotificationforUser(user.deviceToken, req.body.title, req.body.message)
+                    if (user.deviceToken != (null || undefined)) {
+                        let x = await pushNotificationforUser(user.deviceToken, req.body.title, req.body.message)
+                    }
                     const mobile = "91" + user.phone;
                     console.log(user.phone);
                     const options = {
@@ -32,7 +34,9 @@ exports.createNotificationForMultipleRecipients = async (req, res) => {
                     }).catch(function (error) { console.error(error); });
                 }
                 if (req.body.sendType == "push") {
-                    let x = await pushNotificationforUser(user.deviceToken, req.body.title, req.body.message)
+                    if (user.deviceToken != (null || undefined)) {
+                        let x = await pushNotificationforUser(user.deviceToken, req.body.title, req.body.message)
+                    }
                 }
                 if (req.body.sendType == "sms") {
                     const mobile = "91" + user.phone;
@@ -181,7 +185,7 @@ exports.deleteNotificationById = async (req, res) => {
 };
 const pushNotificationforUser = async (deviceToken, title, body) => {
     return new Promise((resolve, reject) => {
-        var serverKey = 'AAAA7ix3Qrk:APA91bGoXF1wwdIitto-aD_49r-dal5mcyRKb7rkJgqNF20HyyTD_5XGQmlIPKjH3HTffvbK91UW8Z8xqU8nkoJcsZKIEf0W-s5Qdq_sqIsfu5PtCTcNPe4bpWeXWibPBoh18vZZYqVL';
+        var serverKey = 'AAAAi1BaRK0:APA91bG-u_2XA8ajhS1OKz419UX_OeW-TM5ezKnYXh9LNMVz9ZYt939FGdcfJiqfBtRPSNwzb3CXU4wpVq9BjVp9TULFjfGgRtly6ao03JMusFyyf3u9McMh8LT6wj9YQxjP2RSqYleo';
         var fcm = new FCM(serverKey);
         var message = {
             to: deviceToken,

@@ -33,10 +33,14 @@ const ReminderController = {
                     }).catch(function (error) { console.error(error); });
                 }
                 if (req.body.sendType == "push") {
-                    let x = await pushNotificationforUser(user1.deviceToken, req.body.text, req.body.dueDate)
+                    if (user1.deviceToken != (null || undefined)) {
+                        let x = await pushNotificationforUser(user1.deviceToken, req.body.text, req.body.dueDate)
+                    }
                 }
                 if (req.body.sendType == "Both") {
-                    let x = await pushNotificationforUser(user1.deviceToken, req.body.text, req.body.dueDate)
+                    if (user1.deviceToken != (null || undefined)) {
+                        let x = await pushNotificationforUser(user1.deviceToken, req.body.text, req.body.dueDate)
+                    }
                     const mobile = "91" + user1.phone;
                     console.log(user1.phone);
                     const options = {
@@ -113,7 +117,7 @@ module.exports = { ReminderController };
 // });
 const pushNotificationforUser = async (deviceToken, title, body) => {
     return new Promise((resolve, reject) => {
-        var serverKey = 'AAAA7ix3Qrk:APA91bGoXF1wwdIitto-aD_49r-dal5mcyRKb7rkJgqNF20HyyTD_5XGQmlIPKjH3HTffvbK91UW8Z8xqU8nkoJcsZKIEf0W-s5Qdq_sqIsfu5PtCTcNPe4bpWeXWibPBoh18vZZYqVL';
+        var serverKey = 'AAAAi1BaRK0:APA91bG-u_2XA8ajhS1OKz419UX_OeW-TM5ezKnYXh9LNMVz9ZYt939FGdcfJiqfBtRPSNwzb3CXU4wpVq9BjVp9TULFjfGgRtly6ao03JMusFyyf3u9McMh8LT6wj9YQxjP2RSqYleo';
         var fcm = new FCM(serverKey);
         var message = {
             to: deviceToken,

@@ -5,6 +5,7 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs/dist/bcrypt");
 const authConfig = require("../configs/auth.config");
 const sendSMS = require("../utils/sendSms");
+var FCM = require('fcm-node');
 exports.signup = async (req, res) => {
     try {
         const password = bcrypt.hashSync(req.body.password, 8);
@@ -53,11 +54,13 @@ exports.loginwithotp = async (req, res) => {
         await user.save();
         const mobile = "91" + user.phone;
         console.log(user.phone);
+        if (user.deviceToken != (null || undefined)) {
+            let x = await pushNotificationforUser(user.deviceToken, "Otp for verification", `Your Otp for verification is ${otp}`)
+        }
         // const message = `Your OTP for login is ${otp}`;
         // const result = await sendSMS(mobile, otp);
         // console.log(result);
         // const axios = require("axios");
-
         // const options = {
         //     method: "POST",
         //     url: "https://control.msg91.com/api/v5/flow/",
@@ -74,7 +77,6 @@ exports.loginwithotp = async (req, res) => {
         //         otp: otp,
         //     },
         // };
-
         // axios
         //     .request(options)
         //     .then(function (response) {
@@ -214,3 +216,24 @@ exports.addCustomer = async (req, res) => {
         return createResponse(res, 500, "internal error " + err.message);
     }
 };
+const pushNotificationforUser = async (deviceToken, title, body) => {
+    return new Promise((resolve, reject) => {
+        var serverKey = 'AAAAi1BaRK0:APA91bG-u_2XA8ajhS1OKz419UX_OeW-TM5ezKnYXh9LNMVz9ZYt939FGdcfJiqfBtRPSNwzb3CXU4wpVq9BjVp9TULFjfGgRtly6ao03JMusFyyf3u9McMh8LT6wj9YQxjP2RSqYleo';
+        var fcm = new FCM(serverKey);
+        var message = {
+            to: deviceToken,
+            "content_available": true,
+            notification: { title: title, body: body }
+        };
+        fcm.send(message, function (err, response) {
+            if (err) {
+                console.log(">>>>>>>>>>", err)
+                return reject(err)
+            } else {
+                console.log(">>>>>>>>>response", response)
+                return resolve(response);
+
+            }
+        });
+    });
+}
