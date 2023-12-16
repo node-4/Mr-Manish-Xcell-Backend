@@ -145,11 +145,11 @@ exports.loginwithotp = async (req, res) => {
                 //     });
                 const options = {
                     method: "POST",
-                    url: "https://control.msg91.com/api/v5/otp?mobile=&template_id=",
+                    url: `https://control.msg91.com/api/v5/otp?mobile=${mobile}&template_id=6458d399d6fc052d7350be62`,
                     headers: {
                         accept: "application/json",
                         "content-type": "application/json",
-                        authkey: "392665AOfokrdImEwF64130f11P1",
+                        authkey: "392665TqSh1FUhhZ657d51fdP1",
                     },
                     data: {
                         template_id: "6458d399d6fc052d7350be62",
