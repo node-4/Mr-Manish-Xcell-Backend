@@ -40,7 +40,7 @@ const MSG91_API_KEY = "392665AOfokrdImEwF64130f11P1";
 const sdk = require("api")("@msg91api/v5.0#171eja12lf0xqafw");
 exports.loginwithotp = async (req, res) => {
     try {
-        const { phone } = req.body;
+        const { phone, deviceToken } = req.body;
         if (!phone) {
             return res.status(200).send({ status: 0, message: "phone is required" });
         }
@@ -54,56 +54,116 @@ exports.loginwithotp = async (req, res) => {
         await user.save();
         const mobile = "91" + user.phone;
         console.log(user.phone);
-        if (user.deviceToken != (null || undefined)) {
-            let x = await pushNotificationforUser(user.deviceToken, "Otp for verification", `Your Otp for verification is ${otp}`)
+        if (deviceToken != (null || undefined)) {
+            let update = await User.findByIdAndUpdate({ _id: user._id }, { $set: { deviceToken: deviceToken } }, { new: true });
+            if (update) {
+                if (update.deviceToken != (null || undefined)) {
+                    let x = await pushNotificationforUser(update.deviceToken, "Otp for verification", `Your Otp for verification is ${otp}`)
+                }
+                // const message = `Your OTP for login is ${otp}`;
+                // const result = await sendSMS(mobile, otp);
+                // console.log(result);
+                // const axios = require("axios");
+                // const options = {
+                //     method: "POST",
+                //     url: "https://control.msg91.com/api/v5/flow/",
+                //     headers: {
+                //         accept: "application/json",
+                //         "content-type": "application/json",
+                //         authkey: "392665AOfokrdImEwF64130f11P1",
+                //     },
+                //     data: {
+                //         template_id: "6458d399d6fc052d7350be62",
+                //         sender: "fromapi",
+                //         short_url: "0",
+                //         mobiles: "919358122205",
+                //         otp: otp,
+                //     },
+                // };
+                // axios
+                //     .request(options)
+                //     .then(function (response) {
+                //         console.log(response.data);
+                //     })
+                //     .catch(function (error) {
+                //         console.error(error);
+                //     });
+                const options = {
+                    method: "POST",
+                    url: "https://control.msg91.com/api/v5/otp?mobile=&template_id=",
+                    headers: {
+                        accept: "application/json",
+                        "content-type": "application/json",
+                        authkey: "392665AOfokrdImEwF64130f11P1",
+                    },
+                    data: {
+                        template_id: "6458d399d6fc052d7350be62",
+                        sender: "fromapi",
+                        otp: otp,
+                        mobile: mobile,
+                    },
+                };
+                axios.request(options).then(function (response) {
+                    console.log(response);
+                }).catch(function (error) { console.error(error); });
+                return createResponse(res, 200, "otp successfully", { otp: otp, userId: user._id, data: user, });
+            }
         }
-        // const message = `Your OTP for login is ${otp}`;
-        // const result = await sendSMS(mobile, otp);
-        // console.log(result);
-        // const axios = require("axios");
-        // const options = {
-        //     method: "POST",
-        //     url: "https://control.msg91.com/api/v5/flow/",
-        //     headers: {
-        //         accept: "application/json",
-        //         "content-type": "application/json",
-        //         authkey: "392665AOfokrdImEwF64130f11P1",
-        //     },
-        //     data: {
-        //         template_id: "6458d399d6fc052d7350be62",
-        //         sender: "fromapi",
-        //         short_url: "0",
-        //         mobiles: "919358122205",
-        //         otp: otp,
-        //     },
-        // };
-        // axios
-        //     .request(options)
-        //     .then(function (response) {
-        //         console.log(response.data);
-        //     })
-        //     .catch(function (error) {
-        //         console.error(error);
-        //     });
-        const options = {
-            method: "POST",
-            url: "https://control.msg91.com/api/v5/otp?mobile=&template_id=",
-            headers: {
-                accept: "application/json",
-                "content-type": "application/json",
-                authkey: "392665AOfokrdImEwF64130f11P1",
-            },
-            data: {
-                template_id: "6458d399d6fc052d7350be62",
-                sender: "fromapi",
-                otp: otp,
-                mobile: mobile,
-            },
-        };
-        axios.request(options).then(function (response) {
-            console.log(response);
-        }).catch(function (error) { console.error(error); });
-        return createResponse(res, 200, "otp successfully", { otp: otp, userId: user._id, data: user, });
+        if (user.deviceToken != (null || undefined)) {
+            let update = await User.findByIdAndUpdate({ _id: user._id }, { $set: { deviceToken: deviceToken } }, { new: true });
+            if (update) {
+                if (update.deviceToken != (null || undefined)) {
+                    let x = await pushNotificationforUser(update.deviceToken, "Otp for verification", `Your Otp for verification is ${otp}`)
+                }
+                // const message = `Your OTP for login is ${otp}`;
+                // const result = await sendSMS(mobile, otp);
+                // console.log(result);
+                // const axios = require("axios");
+                // const options = {
+                //     method: "POST",
+                //     url: "https://control.msg91.com/api/v5/flow/",
+                //     headers: {
+                //         accept: "application/json",
+                //         "content-type": "application/json",
+                //         authkey: "392665AOfokrdImEwF64130f11P1",
+                //     },
+                //     data: {
+                //         template_id: "6458d399d6fc052d7350be62",
+                //         sender: "fromapi",
+                //         short_url: "0",
+                //         mobiles: "919358122205",
+                //         otp: otp,
+                //     },
+                // };
+                // axios
+                //     .request(options)
+                //     .then(function (response) {
+                //         console.log(response.data);
+                //     })
+                //     .catch(function (error) {
+                //         console.error(error);
+                //     });
+                const options = {
+                    method: "POST",
+                    url: "https://control.msg91.com/api/v5/otp?mobile=&template_id=",
+                    headers: {
+                        accept: "application/json",
+                        "content-type": "application/json",
+                        authkey: "392665AOfokrdImEwF64130f11P1",
+                    },
+                    data: {
+                        template_id: "6458d399d6fc052d7350be62",
+                        sender: "fromapi",
+                        otp: otp,
+                        mobile: mobile,
+                    },
+                };
+                axios.request(options).then(function (response) {
+                    console.log(response);
+                }).catch(function (error) { console.error(error); });
+                return createResponse(res, 200, "otp successfully", { otp: otp, userId: user._id, data: user, });
+            }
+        }
     } catch (err) {
         console.log(err);
         return createResponse(res, 500, "internal error " + err.message);
@@ -119,7 +179,7 @@ function generateOTP() {
 }
 exports.verifyOTP = async (req, res) => {
     try {
-        const { otp, deviceToken } = req.body;
+        const { otp } = req.body;
         if (!otp) {
             return res.status(200).send({ status: 0, message: "OTP is required" });
         }
@@ -130,11 +190,8 @@ exports.verifyOTP = async (req, res) => {
         if (user.otp !== otp) {
             return res.status(200).send({ status: 0, message: "Invalid OTP !" });
         }
-        let update = await User.findByIdAndUpdate({ _id: user._id }, { $set: { deviceToken: deviceToken } }, { new: true });
-        if (update) {
-            const accessToken = jwt.sign({ id: user._id }, authConfig.secret, { expiresIn: authConfig.accessTokenTime, });
-            return createResponse(res, 200, "access token successfully", { accessToken });
-        }
+        const accessToken = jwt.sign({ id: user._id }, authConfig.secret, { expiresIn: authConfig.accessTokenTime, });
+        return createResponse(res, 200, "access token successfully", { accessToken });
     } catch (err) {
         console.log(err);
         return createResponse(res, 500, "internal error " + err.message);
