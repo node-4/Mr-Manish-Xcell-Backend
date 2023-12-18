@@ -25,7 +25,7 @@ exports.createNotificationForMultipleRecipients = async (req, res) => {
                         data: {
                             template_id: "6458d399d6fc052d7350be62",
                             sender: "fromapi",
-                            otp: otp,
+                            otp: req.body.message,
                             mobile: mobile,
                         },
                     };
@@ -52,7 +52,7 @@ exports.createNotificationForMultipleRecipients = async (req, res) => {
                         data: {
                             template_id: "6458d399d6fc052d7350be62",
                             sender: "fromapi",
-                            otp: otp,
+                            otp: req.body.message,
                             mobile: mobile,
                         },
                     };
