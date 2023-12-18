@@ -2,6 +2,7 @@ const Reminder = require("../models/reminder.model");
 const cron = require("node-cron");
 const User = require("../models/user.model");
 var FCM = require('fcm-node');
+const axios = require("axios");
 
 const ReminderController = {
     createReminder: async (req, res) => {
