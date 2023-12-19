@@ -73,7 +73,7 @@ exports.getAllOrders = async (req, res) => {
         //     const dateString = req.query.placedOn.trim().replace(/\//g, '-');
         //     queryObj.placedOn = { $regex: new RegExp(dateString, 'i') };
         // }
-        const orders = await Order.find(queryObj).populate("catalogueId").lean().sort({ createdAt: -1 });
+        const orders = await Order.find(queryObj).populate("catalogueId userId").lean().sort({ createdAt: -1 });
         if (orders.length === 0) {
             return res
                 .status(200)
@@ -299,9 +299,7 @@ exports.addOrder = async (req, res) => {
             req.body.placedOn = new Date(req.body.orderDate);
         }
         if (req.body.customerId) {
-            const user = await User.findOne({
-                customerId: req.body.customerId,
-            });
+            const user = await User.findOne({ customerId: req.body.customerId, });
             if (user) {
                 req.body.userId = user._id;
             }
