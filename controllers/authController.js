@@ -275,7 +275,7 @@ exports.addCustomer = async (req, res) => {
 };
 exports.forgetPassword = async (req, res) => {
     try {
-        const { phone } = req.body;
+        const { phone, deviceToken } = req.body;
         if (!phone) {
             return res.status(200).send({ status: 0, message: "phone is required" });
         }
