@@ -83,10 +83,6 @@ exports.update = async (req, res) => {
         }
         const order = await Order.findById(payment.orderId).populate("catalogueId"
         );
-        // console.log(order);
-        // if (!order) {
-        //     return res.status(404).send({ message: "order order not found" });
-        // }
         payment.paymentStatus = req.body.paymentStatus.toLowerCase();
         const updated = await payment.save();
         order.paymentStatus = updated.paymentStatus == "success" || updated.paymentStatus == "complete" ? "completed" : "due";

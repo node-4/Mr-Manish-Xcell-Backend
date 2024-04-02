@@ -14,14 +14,12 @@ const getOrderTrackings = async (req, res) => {
         }
         const orderTrackings = await OrderTracking.find(queryObj);
         if (orderTrackings.length === 0) {
-            return res
-                .status(200)
-                .json({ status: 0, message: "no tracking records" });
+            return res.status(404).json({ status: 404, message: "no tracking records" });
         }
-        res.status(200).json({ status: 1, data: orderTrackings });
+        return res.status(200).json({ status: 200, data: orderTrackings });
     } catch (error) {
         console.log(error);
-        res.status(500).json({ status: 0, message: error.message });
+        return res.status(500).json({ status: 0, message: error.message });
     }
 };
 const getOrderTrackingById = async (req, res) => {
@@ -38,10 +36,10 @@ const getOrderTrackingById = async (req, res) => {
                 .status(200)
                 .json({ status: 0, message: "no tracking records" });
         }
-        res.status(200).json({ status: 1, data: orderTrackings });
+        return res.status(200).json({ status: 1, data: orderTrackings });
     } catch (error) {
         console.log(error);
-        res.status(500).json({ status: 0, message: error.message });
+        return res.status(500).json({ status: 0, message: error.message });
     }
 };
 const createOrderTracking = async (req, res) => {
@@ -91,10 +89,10 @@ const createOrderTracking = async (req, res) => {
             });
         }
         // console.log(notification);
-        res.status(201).json({ status: 1, data: newOrderTracking });
+        return res.status(201).json({ status: 1, data: newOrderTracking });
     } catch (error) {
         console.log(error);
-        res.status(400).json({ status: 0, message: error.message });
+        return res.status(400).json({ status: 0, message: error.message });
     }
 };
 const updateOrderTracking = async (req, res) => {
@@ -123,14 +121,14 @@ const updateOrderTracking = async (req, res) => {
         orderTracking.message = message || orderTracking.message;
         orderTracking.expectedDelivered = expectedDelivered || orderTracking.expectedDelivered;
         const updatedOrderTracking = await orderTracking.save();
-        res.status(200).json({
+        return res.status(200).json({
             status: 1,
             message: "order tracking updated",
             data: updatedOrderTracking,
         });
     } catch (error) {
         console.log(error);
-        res.status(400).json({ status: 0, message: error.message });
+        return res.status(400).json({ status: 0, message: error.message });
     }
 };
 const deleteOrderTracking = async (req, res) => {
@@ -143,13 +141,13 @@ const deleteOrderTracking = async (req, res) => {
             });
         }
         await orderTracking.remove();
-        res.status(200).json({
+        return res.status(200).json({
             status: 1,
             message: "Order tracking record deleted successfully",
         });
     } catch (error) {
         console.log(error);
-        res.status(500).json({ status: 0, message: error.message });
+        return res.status(500).json({ status: 0, message: error.message });
     }
 };
 const trackingForAdmin = async (req, res) => {
@@ -163,10 +161,10 @@ const trackingForAdmin = async (req, res) => {
                 .json({ status: 0, message: "no tracking records" });
         }
         console.log(orderTrackings);
-        res.status(200).json({ status: 1, data: orderTrackings });
+        return res.status(200).json({ status: 1, data: orderTrackings });
     } catch (error) {
         console.log(error);
-        res.status(500).json({ status: 0, message: error.message });
+        return res.status(500).json({ status: 0, message: error.message });
     }
 };
 module.exports = { getOrderTrackings, getOrderTrackingById, createOrderTracking, updateOrderTracking, deleteOrderTracking, trackingForAdmin, };

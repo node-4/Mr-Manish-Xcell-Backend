@@ -8,7 +8,7 @@ exports.createCatalogue = async (req, res) => {
         let total = totalSum;
         let totalAmount = totalSum + deliveryFee + (totalSum * tax_and_charges) / 100;
         totalAmount = Math.round(totalAmount);
-        const catalogueItem = new Catalogue({ orderId, name, therapyName, packages, total, deliveryFee, tax_and_charges, totalAmount, });
+        const catalogueItem = new Catalogue({ orderId, name, therapyName, packages, total, deliveryFee, tax_and_charges, totalAmount, userId: req.body.userId });
         const savedCatalogueItem = await catalogueItem.save();
         await Order.create({ userId: req.body.userId, catalogueId: savedCatalogueItem._id, totalPackages: savedCatalogueItem.packages.length, placedOn: new Date(), });
         return res.status(201).json({ status: 1, message: "Catalogue item created successfully.", data: savedCatalogueItem, });
@@ -19,7 +19,11 @@ exports.createCatalogue = async (req, res) => {
 };
 exports.getCatalogues = async (req, res) => {
     try {
-        const catalogueItems = await Catalogue.find();
+        let queryObj = {};
+        if (req.query.userId) {
+            queryObj.userId = req.query.userId;
+        }
+        const catalogueItems = await Catalogue.find(queryObj);
         if (catalogueItems.length === 0) {
             return res.status(404).json({ status: 0, message: "catalogue items not found" });
         }
