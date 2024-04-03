@@ -17,17 +17,17 @@ exports.create = async (req, res) => {
             return res.status(404).send({ message: "order order not found" });
         }
         // const catalogue = await Catalogue.findOne({ _id: order.catalogueId });
-        const options = {
-            amount: order.catalogueId.totalAmount * 100, currency: "INR",
-            receipt: id,
-            partial_payment: false,
-        };
-        const result = await instance.orders.create(options);
+        // const options = {
+        //     amount: order.catalogueId.totalAmount * 100, currency: "INR",
+        //     receipt: id,
+        //     partial_payment: false,
+        // };
+        // const result = await instance.orders.create(options);
         const paymentObj = {
             amount: req.body.amount,
-            razorPayOrder_id: result.id,
+            // razorPayOrder_id: result.id,
             currency: "INR",
-            receipt: result.receipt,
+            // receipt: result.receipt,
             partial_payment: false,
             userId: req.user._id,
             orderId: order._id,
